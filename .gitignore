@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Secrets (should never be here, but just in case)
+.env
+*.pem
+*.key
+
+# Large raw assets
+*.psd
+*.ai
+*.sketch
+*.fig
