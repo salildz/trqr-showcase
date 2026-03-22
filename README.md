@@ -176,7 +176,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 
 | | **Free** | **Starter** | **Pro** | **Enterprise** |
 |---|---|---|---|---|
-| **Price** | Free | $9.99 / mo | $14.99 / mo | Custom |
+| **Price** | ₺0 | ~~₺1,999~~ ₺999 / mo | ~~₺2,999~~ ₺1,499 / mo | Custom |
 | Tables | 5 | 15 | 40 | 100 |
 | Categories | 5 | 15 | 30 | 50 |
 | Items per Category | 15 | 30 | 50 | 100 |
@@ -219,7 +219,7 @@ Language is configurable per restaurant and switchable in the dashboard at any t
 
 ## Demo
 
-🌐 **Live Product:** [https://trqr.yildizsalih.com](https://trqr.yildizsalih.com)
+🌐 **Live Product:** [https://trqr.net](https://trqr.net)
 
 > _A live demo account may be available — see the landing page for details._
 
@@ -242,7 +242,7 @@ For licensing inquiries, collaboration, or white-label arrangements, please reac
 Built and maintained by **Salih Yıldız**.
 
 - **Portfolio:** [yildizsalih.com](https://yildizsalih.com)
-- **GitHub:** [@yildizsalih](https://github.com/yildizsalih)
+- **GitHub:** [@salildz](https://github.com/salildz)
 
 ---
 
