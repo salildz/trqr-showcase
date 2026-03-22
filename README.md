@@ -4,9 +4,9 @@
 
 # TRQR
 
-### Digital QR Menu Platform for Modern Restaurants
+### Restaurant Management System with Digital QR Menus
 
-**Let your guests scan, browse, and order — no app required.**
+**Menu management, table tracking, payments, and analytics — all in one dashboard.**
 
 [![Status](https://img.shields.io/badge/status-live-brightgreen?style=flat-square)](https://trqr.net)
 [![Stack](https://img.shields.io/badge/stack-React%2019%20%2B%20Node.js%2022%20%2B%20PostgreSQL-blue?style=flat-square)](#tech-stack)
@@ -23,11 +23,11 @@
 
 ## Overview
 
-TRQR is a full-stack SaaS platform that turns any restaurant table into a digital menu experience. Guests scan a unique QR code, instantly browse the menu on their phone, and place orders — no app download, no paper menus, no friction.
+TRQR is a full-stack SaaS platform for restaurant management. At its core is a QR-based digital menu system — guests scan the table QR code, browse the menu instantly on their phone, and place orders with no app download required.
 
-Restaurant owners manage everything from a central dashboard: build and edit menus, design their QR tabletop cards, track payments, monitor analytics, and configure table layouts — all in real time.
+But TRQR goes well beyond menus. Restaurant owners get a complete operational dashboard: manage tables and live orders, track payments with split-bill support, monitor revenue and traffic analytics, design and print branded QR tabletop cards, and configure the entire system in Turkish or English — all in real time from a single interface.
 
-Built with a strong emphasis on production security, plan-based access control, and a clean, fast user experience in both Turkish and English.
+Built with a strong emphasis on production security, plan-based access control, and a clean, fast user experience.
 
 ---
 
