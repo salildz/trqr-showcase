@@ -61,19 +61,20 @@ Request
   ├─ globalApiLimiter        – 600 req / 15 min rate limit across all /api routes
   │
   └─ Route-specific middleware
-       ├─ authenticateToken  – Verify JWT; check Redis token blacklist
-       ├─ loadPlan           – Attach restaurant plan config to req
-       ├─ requireFeature     – Gate access by plan feature flag
-       ├─ requireMenuLimits  – Validate menu mutations against plan limits
-       ├─ requireAdmin       – Role check (user.role === 'admin')
-       └─ validate(schema)   – Zod schema validation
+       ├─ authenticateToken          – Verify JWT; check Redis token blacklist
+       ├─ loadPlan                   – Attach restaurant plan config to req
+       ├─ requireFeature             – Gate access by plan feature flag
+       ├─ requireMenuLimits          – Validate menu mutations against plan limits
+       ├─ requireAdmin               – Role check (user.role === 'admin')
+       ├─ verificationResendLimiter  – 5 resend requests / hour / IP
+       └─ validate(schema)           – Zod schema validation
 ```
 
 ### Domain Controllers
 
 | Controller | Responsibility |
 |------------|---------------|
-| `userController` | Register, login, token refresh, logout, password reset |
+| `userController` | Register, login, token refresh, logout, password reset, email verification (verify / resend / change pre-verification) |
 | `menuCrudController` | Menu read/write with before/after diff audit logging |
 | `menuQrController` | QR code generation, template management, print export |
 | `menuMetaController` | Restaurant name, language, established year updates |
@@ -96,7 +97,12 @@ User
   ├── id (UUID)
   ├── username, email, passwordHash
   ├── role (user | admin)
-  └── onboardingState, lastLoginAt
+  ├── onboardingState, lastLoginAt
+  ├── emailVerified (BOOLEAN, default false)
+  ├── emailVerifiedAt (TIMESTAMP, nullable)
+  ├── emailVerificationTokenHash (VARCHAR 64, nullable)  ← SHA-256 of raw token
+  ├── emailVerificationTokenExpiry (TIMESTAMP, nullable) ← 24h TTL
+  └── verificationEmailSentAt (TIMESTAMP, nullable)      ← 60s resend cooldown
 
 Menu
   ├── id (UUID)
@@ -153,10 +159,24 @@ AuditLog (immutable — no updates ever)
 ```
 Client                          Server
   │                               │
+  ├─ POST /api/users/register ──▶ │
+  │  { username, email, password }│  hash password (bcrypt)
+  │                               │  generate 256-bit token → SHA-256 hash stored
+  │                               │  send verification email (non-blocking)
+  │◀── 201 { email } ────────────│
+  │                               │
+  │  [user clicks link in email]  │
+  │                               │
+  ├─ GET /api/users/verify-email ▶│
+  │  ?token=<raw-hex>             │  hash token → compare with stored hash
+  │                               │  set emailVerified=true, clear token
+  │◀── 200 OK ───────────────────│
+  │                               │
   ├─ POST /api/users/login ──────▶│
   │  { email, password }          │
   │  [+ Turnstile token if        │  verify password (bcrypt)
-  │    brute-force detected]      │  check progressive auth limit
+  │    brute-force detected]      │  check emailVerified → 403 if false
+  │                               │  check progressive auth limit
   │                               │
   │◀── 200 { accessToken } ───────│
   │    Set-Cookie: refreshToken   │  (HTTP-only, Secure, SameSite=Strict)

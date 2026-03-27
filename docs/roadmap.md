@@ -16,6 +16,7 @@ This document outlines the public-facing development direction for TRQR.
 - **Multilingual Support** — Full Turkish + English throughout
 - **Plan Limit UX** — Specific, actionable errors on plan limit exceeded with one-click revert
 - **JWT Token Blacklist** — Redis-backed immediate logout and access token revocation across all sessions
+- **Email Verification** — Mandatory verification on signup; hard login block for unverified accounts; resend with DB-level 60s cooldown and 5/hour IP rate limit; email change before verification; bilingual TR/EN HTML emails via Google Workspace SMTP
 
 ---
 

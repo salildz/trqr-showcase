@@ -135,6 +135,38 @@ Each step tracks completion state independently. Checklist can be dismissed once
 
 ---
 
+## Security
+
+### Email Verification
+
+All accounts must verify their email address before they can log in.
+
+**Verification flow**
+1. User registers → verification email sent immediately
+2. Account is hard-blocked from login until the email link is clicked
+3. Stale refresh token cookies for unverified accounts are also rejected — no session-based bypass
+4. Link contains a 256-bit random token (raw hex in email, SHA-256 hash stored in DB); expires in 24 hours
+
+**Resend & email change**
+- Resend button with 60-second per-user cooldown (DB-tracked) and 5/hour IP rate limit
+- Email address can be changed before verification — requires password confirmation; issues a new token
+
+**Email delivery**
+- Provider-agnostic service layer (`smtp` or `mailjet`)
+- Default: Google Workspace SMTP via Nodemailer
+- Bilingual HTML template — Turkish / English / bilingual mode based on user's browser language
+
+### Authentication
+
+- **JWT Access Tokens** — 15-minute expiry, verified on every protected request
+- **HTTP-only Refresh Cookies** — 7-day rotating token; `Secure`, `SameSite=Strict`
+- **Redis Token Blacklist** — Revoked tokens blacklisted by JTI; checked on every authenticated request
+- **Progressive CAPTCHA** — Cloudflare Turnstile triggered after repeated failed login attempts
+- **bcrypt Password Hashing** — Passwords hashed before storage; never stored in plaintext
+- **Rate Limiting** — Per-IP progressive limiter on auth endpoints; global 600 req/15 min across all API routes
+
+---
+
 ## Internationalization
 
 Every user-facing string in the dashboard, public menu, and error messages is localized in:
