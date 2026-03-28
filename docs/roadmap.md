@@ -16,7 +16,10 @@ This document outlines the public-facing development direction for TRQR.
 - **Multilingual Support** — Full Turkish + English throughout
 - **Plan Limit UX** — Specific, actionable errors on plan limit exceeded with one-click revert
 - **JWT Token Blacklist** — Redis-backed immediate logout and access token revocation across all sessions
-- **Email Verification** — Mandatory verification on signup; hard login block for unverified accounts; resend with DB-level 60s cooldown and 5/hour IP rate limit; email change before verification; bilingual TR/EN HTML emails via Google Workspace SMTP
+- **Email Verification** — Mandatory verification on signup; hard login block for unverified accounts; resend with DB-level 60s cooldown and 5/hour IP rate limit; email change before verification; bilingual TR/EN HTML emails with logo header via Google Workspace SMTP
+- **Email Change Flow** — Authenticated users can change their registered email from the Restaurant Management page with password confirmation; SHA-256 token sent to the new address with 24 h TTL; 60 s resend cooldown; final uniqueness guard on confirmation; pending banner with cancel option in the dashboard
+- **Live Sample Menu** — Fixed public URL `/menu/sample` serving a hardcoded Rustic-themed Turkish restaurant demo with category images; linked from the landing page and all QR-menu example pages; no login or DB lookup required
+- **JSON-LD Structured Data** — Static `WebSite` and `Organization` schemas embedded in `index.html` for Wave 1 (static HTML) crawl; per-page `Restaurant` and `Menu` schemas injected by the SPA; resolves Google site-name display and improves rich-result eligibility
 
 ---
 
@@ -37,7 +40,6 @@ This document outlines the public-facing development direction for TRQR.
 - **Reservation Module** — Embedded table reservation flow accessible via QR
 - **Custom Domain for Menu** — Serve public menu at restaurant's own domain
 - **WhatsApp / SMS Notifications** — Order confirmation and table-ready alerts
-- **JSON-LD Rich Results** — Structured data for `Restaurant` + `Menu` on public pages
 - **RBAC Expansion** — Support / manager admin roles
 
 ---

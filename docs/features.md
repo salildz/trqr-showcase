@@ -38,6 +38,11 @@ The menu builder is the core of the dashboard experience.
 
 Template access is gated by plan tier. Upgrading immediately unlocks the template for use.
 
+**Live demo**
+- A sample menu is always available at `/menu/sample` — no login or restaurant account required
+- Uses the Rustic template with a complete Turkish restaurant dataset including item photos
+- A floating template-switcher bar lets visitors preview all 6 templates on the same sample data
+
 **QR Tabletop Card Designer**
 - Each menu template has a matching QR tabletop card design
 - Preview updates live as template is selected
@@ -147,7 +152,7 @@ All accounts must verify their email address before they can log in.
 3. Stale refresh token cookies for unverified accounts are also rejected — no session-based bypass
 4. Link contains a 256-bit random token (raw hex in email, SHA-256 hash stored in DB); expires in 24 hours
 
-**Resend & email change**
+**Resend & email change before verification**
 - Resend button with 60-second per-user cooldown (DB-tracked) and 5/hour IP rate limit
 - Email address can be changed before verification — requires password confirmation; issues a new token
 
@@ -155,6 +160,26 @@ All accounts must verify their email address before they can log in.
 - Provider-agnostic service layer (`smtp` or `mailjet`)
 - Default: Google Workspace SMTP via Nodemailer
 - Bilingual HTML template — Turkish / English / bilingual mode based on user's browser language
+
+### Email Change (Authenticated)
+
+Verified users can change their registered email address from the Restaurant Management page.
+
+**Flow**
+1. User enters new email + current password in the "E-posta Değiştir" form
+2. Password is verified server-side; new address is checked for uniqueness
+3. A confirmation email (bilingual HTML with logo) is sent to the **new** address with a signed token (SHA-256 hash stored, 24 h TTL)
+4. Until confirmed, a dismissible "pending change" banner is shown in the dashboard with a cancel option
+5. On confirmation, `user.email` is atomically updated; a final uniqueness check guards against race conditions (another user registering the same address between request and confirm)
+6. If the token has expired or the address was taken, the confirmation page shows a clear error with a path to request a new link
+
+**Security details**
+- 60 s per-user resend cooldown (DB-tracked `emailChangeSentAt`)
+- Hashed token storage — raw token never persisted
+- Clearing all pending-change fields on cancel or successful confirm
+- Edge case: if the address is claimed between request and confirmation, the pending change is cleared and `EmailNowTaken` is returned
+
+---
 
 ### Authentication
 
