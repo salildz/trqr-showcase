@@ -42,7 +42,9 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **6 Menu Templates** | Choose from Classic, Minimal, Modern, Rustic, Elegant, or Neon — each with a matching QR tabletop card design. |
 | **Print Export** | Export printable QR tabletop cards as PDF in A5, A6, or Square format. |
 | **Table Management** | Configure table count, track per-table orders, merge tables, and close bills in one tap. |
-| **Payment Tracking** | Record full payments, equal splits, or per-item payments. |
+| **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage or amount-based discounts at checkout. |
+| **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
+| **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, and top items. Exportable as PDF. |
 | **Analytics Dashboard** | Daily views, revenue trends, top-selling items, hourly traffic distribution — all with date range filtering. |
 | **Onboarding Wizard** | Step-by-step setup flow for new restaurants. |
 | **Bilingual UI** | Full Turkish and English support throughout the entire dashboard. |
@@ -67,9 +69,9 @@ Built with a strong emphasis on production security, plan-based access control, 
 
 ### Dashboard
 
-| Menu Builder | Analytics | Table Management |
-|---|---|---|
-| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) | ![Tables](assets/screenshots/dashboard-tables.png) |
+| Menu Builder | Menu Design | Analytics | Table Management |
+|---|---|---|---|
+| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Menu Design](assets/screenshots/dashboard-menu-design.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) | ![Tables](assets/screenshots/dashboard-tables.png) |
 
 ### Public Menu (Guest View)
 
@@ -88,6 +90,18 @@ Built with a strong emphasis on production security, plan-based access control, 
 | Mobile Menu | Mobile Dashboard |
 |---|---|
 | ![Mobile Menu](assets/screenshots/mobile-menu.png) | ![Mobile Dashboard](assets/screenshots/mobile-dashboard.png) |
+
+### Marketing & SEO
+
+| Landing Page | SEO Features | Blog | Contact |
+|---|---|---|---|
+| ![Landing Page](assets/screenshots/landing-hero.png) | ![SEO Page](assets/screenshots/seo-landing.png) | ![Blog Index](assets/screenshots/blog-index.png) | ![Contact Page](assets/screenshots/contact-page.png) |
+
+### Admin & Auth
+
+| Admin Overview | Authentication |
+|---|---|
+| ![Admin Dashboard](assets/screenshots/admin-dashboard.png) | ![Login](assets/screenshots/auth-login.png) |
 
 ---
 
@@ -174,9 +188,12 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 
 ## Subscription Plans
 
+> **Every new account starts on the Starter plan — free for the first 5 days.** No credit card required. After the trial, accounts automatically move to the Free plan unless upgraded. A 3-day grace period follows expiry before any data is trimmed.
+
 | | **Free** | **Starter** | **Pro** | **Enterprise** |
 |---|---|---|---|---|
 | **Price** | ₺0 | ~~₺1,999~~ ₺999 / mo | ~~₺2,999~~ ₺1,499 / mo | Custom |
+| **Trial** | — | **5 days free** | — | — |
 | Tables | 5 | 15 | 40 | 100 |
 | Categories | 5 | 15 | 30 | 50 |
 | Items per Category | 15 | 30 | 50 | 100 |

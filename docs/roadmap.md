@@ -20,6 +20,12 @@ This document outlines the public-facing development direction for TRQR.
 - **Email Change Flow** — Authenticated users can change their registered email from the Restaurant Management page with password confirmation; SHA-256 token sent to the new address with 24 h TTL; 60 s resend cooldown; final uniqueness guard on confirmation; pending banner with cancel option in the dashboard
 - **Live Sample Menu** — Fixed public URL `/menu/sample` serving a hardcoded Rustic-themed Turkish restaurant demo with category images; linked from the landing page and all QR-menu example pages; no login or DB lookup required
 - **JSON-LD Structured Data** — Static `WebSite` and `Organization` schemas embedded in `index.html` for Wave 1 (static HTML) crawl; per-page `Restaurant` and `Menu` schemas injected by the SPA; resolves Google site-name display and improves rich-result eligibility
+- **Percentage Discount** — Percentage-based discount applied at payment step alongside existing amount-based discounts; discount percent and computed amount persisted on the sales record
+- **Receipt History** — Every completed payment stored as a sequentially numbered receipt (`YYYYMMDD-NNNN`); Receipts dashboard page with date/method filters, paginated list, itemised detail dialog, and per-receipt PDF export
+- **Day Summary Report** — Aggregate report for any calendar date: order count, total/cash/card revenue, discount totals, average order value, top-selling items by quantity; exportable as thermal-style PDF
+- **Forgot Password** — Secure token-based password reset flow: SHA-256 hashed token, 1-hour TTL, one-time use, per-account 60 s resend cooldown, per-IP rate limit (5/hour), all active sessions invalidated on reset; bilingual TR/EN reset email via SMTP
+- **Receipt History for Free Plan** — Receipts and day-summary pages visible to all plans with a blur-lock overlay and upgrade CTA for users on the free tier
+- **5-Day Free Trial** — Every new account starts on the Starter plan for 5 days with no credit card required. Trial expiry triggers a 3-day grace period (warning banner, no data loss). After the grace period, free-plan limits are enforced server-side: tables clamped to 5, categories to 5, item images to 12, and locked templates reset to Classic. Existing users registered within the trial window are backfilled automatically. The plan contact flow includes a mail-client fallback dialog with copyable email content for environments where mailto links don't open a mail app.
 
 ---
 

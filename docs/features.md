@@ -66,8 +66,52 @@ Available on Starter and above.
 
 - Record sales when a table's bill is closed
 - Payment methods: full, split, per-item
-- Items and totals stored per transaction in `SalesRecord`
+- **Percentage discount** — apply a 0–100% discount at the payment confirmation step; raw subtotal, discount line, and discounted total shown in the breakdown
+- Items and totals stored per transaction in `SalesRecord`, including `discountPercent`, `discountAmount`, and `splitType`
 - Used as input for the Analytics revenue charts
+
+---
+
+## Receipt History
+
+Available on Starter and above.
+
+Each completed payment generates a uniquely numbered receipt (`YYYYMMDD-NNNN`, sequential per restaurant per day). The Receipts dashboard page provides:
+
+**Filters**
+- Date range (from / to)
+- Payment method (cash / card / all)
+
+**Receipt list**
+- Paginated table (20 per page) with receipt number, table, items, total, payment method, date
+- Click any row to open an itemised detail dialog
+- Per-receipt PDF export (80mm thermal receipt format)
+
+**Plan enforcement**
+- Receipts and Day Summary pages are visible to all plans, including the free tier
+- Users without a qualifying plan see a blur-lock overlay with a clear upgrade prompt and a one-click path to the Subscription page
+- The API returns 403 if the plan does not include `paymentTracking`; the UI handles this gracefully without an error page
+
+---
+
+## Day Summary Report
+
+Available on Starter and above.
+
+Select any calendar date and load an aggregate breakdown:
+
+| Metric | Description |
+|--------|-------------|
+| Order Count | Number of closed bills for the day |
+| Total Revenue | Sum of all `totalAmount` values |
+| Cash Revenue | Revenue from cash payments |
+| Card Revenue | Revenue from card payments |
+| Total Discount | Sum of all `discountAmount` values |
+| Avg Order Value | Total revenue ÷ order count |
+
+**Top Items table** — items ranked by quantity sold for the day.
+
+**PDF export** — generates an A4-format summary report via jsPDF + html2canvas.
 
 ---
 
@@ -189,6 +233,58 @@ Verified users can change their registered email address from the Restaurant Man
 - **Progressive CAPTCHA** — Cloudflare Turnstile triggered after repeated failed login attempts
 - **bcrypt Password Hashing** — Passwords hashed before storage; never stored in plaintext
 - **Rate Limiting** — Per-IP progressive limiter on auth endpoints; global 600 req/15 min across all API routes
+- **Forgot Password** — Secure token-based reset flow:
+  - 256-bit random token; SHA-256 hash stored in DB — raw token never persisted
+  - 1-hour TTL; one-time use (cleared immediately on consumption)
+  - Per-account 60-second resend cooldown; per-IP 5/hour rate limit
+  - All active sessions (refresh tokens) invalidated on successful reset
+  - Bilingual TR/EN reset email via SMTP
+  - No user-enumeration — endpoint always responds with 200 regardless of whether the email exists
+
+---
+
+## Trial & Plan Lifecycle
+
+Every new account starts on the **Starter plan** with a **5-day free trial**. No credit card is required.
+
+**Trial period**
+- New registrations are placed on the Starter plan with `trialEndsAt = registration time + 5 days`
+- Full Starter feature access during the trial (15 tables, 4 templates, payment tracking, etc.)
+- A countdown banner is shown in the dashboard during the trial
+- Existing users registered within 5 days before the feature launched are automatically backfilled into the trial via a one-time migration
+
+**Trial expiry → Grace period**
+- When the trial ends (detected lazily on next `GET /api/restaurant` call, or by a daily cron job at 03:15 UTC), the plan is set to `free` and a **3-day grace period** begins
+- A prominent warning banner appears on every dashboard tab during the grace period, showing the enforcement date and an "Upgrade Plan" shortcut
+- No data is modified during the grace period — the user retains all their data
+
+**Grace period enforcement**
+- After the 3-day grace period (again, lazily on next request or via cron), free-plan limits are applied to the restaurant's data:
+  - **Tables** — `tableCount` clamped to 5; excess non-merged tables deleted from the database
+  - **Categories** — sorted by display order; first 5 kept, the rest deleted
+  - **Items per category** — sorted by display order; first 15 per category kept
+  - **Item images** — counted globally across all categories; `imageUrl` removed from items beyond the 12-image limit (images stripped from the highest-order items first)
+  - **Menu template** — if the active template (e.g. Modern, Rustic, Elegant, Neon) is not available on the free plan, it is reset to `classic`
+
+---
+
+## SEO & Marketing
+
+- **Dynamic SEO Landing Pages**: Multiple dedicated landing pages (QR Menu, Digital Menu, Contactless Menu) optimized for search engines in both Turkish and English.
+- **Service & Product Pages**: Specialized pages detailing pricing, system features, and example templates.
+- **Dynamic Meta Tags**: Full Open Graph and Twitter Card support on all marketing pages via React Helmet Async.
+- **Lead Generation**: Contact pages with fully integrated contact forms for enterprise inquiries.
+
+---
+
+## Blog System
+
+A lightweight, fully integrated blog system for content marketing and user education.
+
+- **Blog Index**: Paginated list of articles with featured images, excerpts, and reading times.
+- **Article Pages**: Full Markdown rendering for rich blog posts.
+- **Bilingual Content**: Separate articles for Turkish (`/blog`) and English (`/en/blog`) audiences.
+- **SEO Optimized**: Each post includes custom meta tags, canonical URLs, and structured data ready for search engines.
 
 ---
 
