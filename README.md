@@ -38,16 +38,17 @@ Built with a strong emphasis on production security, plan-based access control, 
 | Feature | Description |
 |---------|-------------|
 | **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. Toggle item availability instantly. |
-| **QR Code Generator** | Unique QR code per restaurant. Download or print directly. |
-| **6 Menu Templates** | Choose from Classic, Minimal, Modern, Rustic, Elegant, or Neon — each with a matching QR tabletop card design. |
-| **Print Export** | Export printable QR tabletop cards as PDF in A5, A6, or Square format. |
-| **Table Management** | Configure table count, track per-table orders, merge tables, and close bills in one tap. |
-| **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage or amount-based discounts at checkout. |
+| **Menu Design** | Dedicated template picker with live preview. Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
+| **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. |
+| **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
+| **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, and close bills in one tap. |
+| **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. |
 | **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
-| **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, and top items. Exportable as PDF. |
-| **Analytics Dashboard** | Daily views, revenue trends, top-selling items, hourly traffic distribution — all with date range filtering. |
-| **Onboarding Wizard** | Step-by-step setup flow for new restaurants. |
-| **Bilingual UI** | Full Turkish and English support throughout the entire dashboard. |
+| **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, and top items by quantity. Exportable as PDF. |
+| **Analytics Dashboard** | Daily views, revenue trends, top-selling items, and hourly traffic distribution — all with date range filtering (Today / This Week / This Month / Custom). |
+| **Subscription Management** | In-dashboard plan management with live plan status, trial countdown, grace period warnings, and a direct upgrade path. |
+| **Onboarding Wizard** | Step-by-step setup checklist for new restaurants: name, first item, menu preview, QR download. Dismissible once complete. |
+| **Bilingual UI** | Full Turkish and English support throughout the entire dashboard, public menu, and email flows. |
 
 ### For Guests
 
@@ -69,21 +70,23 @@ Built with a strong emphasis on production security, plan-based access control, 
 
 ### Dashboard
 
-| Menu Builder | Menu Design | Analytics | Table Management |
-|---|---|---|---|
-| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Menu Design](assets/screenshots/dashboard-menu-design.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) | ![Tables](assets/screenshots/dashboard-tables.png) |
-
-### Public Menu (Guest View)
-
-| Classic Template | Neon Template | Elegant Template |
+| Menu Builder | Analytics | QR Code & Tabletop |
 |---|---|---|
-| ![Classic](assets/screenshots/menu-classic.png) | ![Neon](assets/screenshots/menu-neon.png) | ![Elegant](assets/screenshots/menu-elegant.png) |
+| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) | ![QR Code](assets/screenshots/qr-designer.png) |
 
-### QR Designer & Print Export
+| Table Management | Print Menu | Restaurant & Menu Design |
+|---|---|---|
+| ![Tables](assets/screenshots/dashboard-tables.png) | ![Print Menu](assets/screenshots/dashboard-print-export.png) | ![Restaurant](assets/screenshots/dashboard-restaurant.png) |
 
-| QR Tabletop Designer | Print Export |
-|---|---|
-| ![QR Designer](assets/screenshots/qr-designer.png) | ![Print Export](assets/screenshots/print-export.png) |
+### Public Menu — 6 Templates
+
+| Classic | Minimal | Modern |
+|---|---|---|
+| ![Classic](assets/screenshots/menu-classic.png) | ![Minimal](assets/screenshots/menu-minimal.png) | ![Modern](assets/screenshots/menu-modern.png) |
+
+| Rustic | Elegant | Neon |
+|---|---|---|
+| ![Rustic](assets/screenshots/menu-rustic.png) | ![Elegant](assets/screenshots/menu-elegant.png) | ![Neon](assets/screenshots/menu-neon.png) |
 
 ### Mobile
 
@@ -91,17 +94,17 @@ Built with a strong emphasis on production security, plan-based access control, 
 |---|---|
 | ![Mobile Menu](assets/screenshots/mobile-menu.png) | ![Mobile Dashboard](assets/screenshots/mobile-dashboard.png) |
 
-### Marketing & SEO
+### Marketing Pages
 
-| Landing Page | SEO Features | Blog | Contact |
-|---|---|---|---|
-| ![Landing Page](assets/screenshots/landing-hero.png) | ![SEO Page](assets/screenshots/seo-landing.png) | ![Blog Index](assets/screenshots/blog-index.png) | ![Contact Page](assets/screenshots/contact-page.png) |
-
-### Admin & Auth
-
-| Admin Overview | Authentication |
+| Landing Page | Pricing |
 |---|---|
-| ![Admin Dashboard](assets/screenshots/admin-dashboard.png) | ![Login](assets/screenshots/auth-login.png) |
+| ![Landing Page](assets/screenshots/landing-hero.png) | ![Pricing](assets/screenshots/landing-pricing.png) |
+
+### Authentication
+
+| Login & Sign Up |
+|---|
+| ![Login](assets/screenshots/auth-login.png) |
 
 ---
 

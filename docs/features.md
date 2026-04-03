@@ -53,6 +53,11 @@ Template access is gated by plan tier. Upgrading immediately unlocks the templat
 ## Table Management
 
 - Create tables numbered sequentially
+- **Custom table names** — each table can be given a custom display name (e.g., "Garden", "VIP 1", "Terrace") that appears everywhere in the dashboard: cards, order dialogs, merge/transfer pickers, and snackbar notifications. Defaults to "Table N" when no custom name is set.
+  - Stored as `customName` on the `Tables` DB row; nullable (null = use default label)
+  - Rename dialog accessible via the pencil icon on every table card; supports clearing the custom name to revert to the default
+  - Name changes update local state optimistically and are confirmed via `PUT /api/tables/:tableId/name`
+- When table count is reduced, tables are deleted from the highest-numbered end, preserving custom names for all remaining tables
 - Mark tables as occupied / free
 - Track per-table order accumulation
 - Merge a secondary table into a primary (combined bill view)
@@ -257,6 +262,11 @@ Every new account starts on the **Starter plan** with a **5-day free trial**. No
 - When the trial ends (detected lazily on next `GET /api/restaurant` call, or by a daily cron job at 03:15 UTC), the plan is set to `free` and a **3-day grace period** begins
 - A prominent warning banner appears on every dashboard tab during the grace period, showing the enforcement date and an "Upgrade Plan" shortcut
 - No data is modified during the grace period — the user retains all their data
+
+**Grace period feature access**
+- During the grace period, all feature checks (`requireFeature`, `requireAnalyticsTier`) are bypassed — the restaurant retains full operational access to paid features (payment tracking, analytics tiers, etc.) until enforcement day
+- Rationale: data cleanup has not happened yet, so blocking operations like payment recording during this window would be harmful
+- The `loadPlan` middleware sets `req.isInGracePeriod = true` when `gracePeriodEndsAt` is in the future; each middleware guard checks this flag before enforcing plan limits
 
 **Grace period enforcement**
 - After the 3-day grace period (again, lazily on next request or via cron), free-plan limits are applied to the restaurant's data:
