@@ -68,13 +68,17 @@ Built with a strong emphasis on production security, plan-based access control, 
 
 ### Dashboard
 
-| Menu Builder | Analytics | QR Code & Tabletop |
-|---|---|---|
-| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) | ![QR Code](assets/screenshots/qr-designer.png) |
+| Menu Builder | Analytics |
+|---|---|
+| ![Menu Builder](assets/screenshots/dashboard-menu-builder.png) | ![Analytics](assets/screenshots/dashboard-analytics.png) |
 
-| Table Management | Print Menu | Restaurant & Menu Design |
-|---|---|---|
-| ![Tables](assets/screenshots/dashboard-tables.png) | ![Print Menu](assets/screenshots/dashboard-print-export.png) | ![Restaurant](assets/screenshots/dashboard-restaurant.png) |
+| QR Code & Tabletop | Table Management |
+|---|---|
+| ![QR Code](assets/screenshots/qr-designer.png) | ![Tables](assets/screenshots/dashboard-tables.png) |
+
+| Print Menu | Restaurant & Menu Design |
+|---|---|
+| ![Print Menu](assets/screenshots/dashboard-print-export.png) | ![Restaurant](assets/screenshots/dashboard-restaurant.png) |
 
 ### Public Menu — 6 Templates
 
