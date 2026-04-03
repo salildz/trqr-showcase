@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="assets/branding/logo.png" alt="TRQR Logo" width="120" />
-
-# TRQR
+<img src="assets/branding/logo.png" alt="TRQR Logo" width="200" />
 
 ### Restaurant Management System with Digital QR Menus
 
