@@ -36,7 +36,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | Feature | Description |
 |---------|-------------|
 | **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. Toggle item availability instantly. |
-| **Menu Design** | Dedicated template picker with live preview. Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
+| **Menu Design** | Dedicated Menu Designer page with live preview (separate from Restaurant Settings). Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
 | **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. |
 | **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
 | **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, and close bills in one tap. |
@@ -76,9 +76,13 @@ Built with a strong emphasis on production security, plan-based access control, 
 |---|---|
 | ![QR Code](assets/screenshots/qr-designer.png) | ![Tables](assets/screenshots/dashboard-tables.png) |
 
-| Print Menu | Restaurant & Menu Design |
+| Print Menu | Restaurant Settings |
 |---|---|
-| ![Print Menu](assets/screenshots/dashboard-print-export.png) | ![Restaurant](assets/screenshots/dashboard-restaurant.png) |
+| ![Print Menu](assets/screenshots/dashboard-print-export.png) | ![Restaurant Settings](assets/screenshots/dashboard-restaurant.png) |
+
+| Menu Designer |
+|---|
+| ![Menu Designer](assets/screenshots/dashboard-menu-designer.png) |
 
 ### Public Menu — 6 Templates
 

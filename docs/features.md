@@ -37,6 +37,7 @@ The menu builder is the core of the dashboard experience.
 - **Neon** — Cyberpunk-inspired dark theme with glowing accents
 
 Template access is gated by plan tier. Upgrading immediately unlocks the template for use.
+Template selection is configured on a dedicated Menu Designer page, separate from Restaurant Settings.
 
 **Live demo**
 - A sample menu is always available at `/menu/sample` — no login or restaurant account required
