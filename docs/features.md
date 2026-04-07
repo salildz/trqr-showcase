@@ -25,8 +25,9 @@ The menu builder is the core of the dashboard experience.
 
 **QR Code**
 - Unique QR code generated per restaurant
-- Encodes a public URL pointing to the restaurant's live menu
+- Encodes a public URL pointing to the restaurant's live menu — uses the custom slug URL if one is set, otherwise falls back to the UUID-based public URL
 - Downloadable as PNG from the dashboard
+- The "Go to Menu" link in the dashboard also reflects the custom slug when active
 
 **Menu Templates (6)**
 - **Classic** — Warm serif design, ideal for traditional restaurants
@@ -43,6 +44,14 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 - A sample menu is always available at `/menu/sample` — no login or restaurant account required
 - Uses the Rustic template with a complete Turkish restaurant dataset including item photos
 - A floating template-switcher bar lets visitors preview all 6 templates on the same sample data
+
+**Custom Menu URL** *(Pro and Enterprise)*
+- Set a short, memorable slug for the public menu (e.g., `trqr.net/menu/yildiz-restoran`)
+- Real-time availability check with 600 ms debounce — instant feedback in the input field
+- Slug validation: lowercase letters, digits, and hyphens; 3–50 characters; reserved word list enforced
+- Both the UUID-based URL and the custom slug resolve to the same menu (custom slug takes priority)
+- Slug is cleared automatically if the restaurant's plan drops below Pro after the grace period expires
+- Locked with an upgrade prompt for Free and Starter plans
 
 **QR Tabletop Card Designer**
 - Each menu template has a matching QR tabletop card design
@@ -138,6 +147,17 @@ Date range selector: Today / This Week / This Month / Custom (max 365 days).
 - Hourly Distribution — access count by hour of day
 
 Analytics tier (Basic / Standard / Advanced / Premium) gates the level of detail available per plan.
+
+---
+
+## Public Menu — Branding
+
+Every public menu includes a "Powered by TRQR" watermark footer by default. The watermark:
+
+- Is styled to match each template's color palette (dark on light themes, light/accent on dark themes)
+- Is automatically hidden for Pro and Enterprise restaurants (`removeBranding` feature flag)
+- Is never shown in the Dashboard print preview or Menu Designer preview mode
+- Is rendered server-side per request — no client-side override is possible; the `removeBranding` flag is resolved from the restaurant's active plan on the backend
 
 ---
 
@@ -276,6 +296,7 @@ Every new account starts on the **Starter plan** with a **5-day free trial**. No
   - **Items per category** — sorted by display order; first 15 per category kept
   - **Item images** — counted globally across all categories; `imageUrl` removed from items beyond the 12-image limit (images stripped from the highest-order items first)
   - **Menu template** — if the active template (e.g. Modern, Rustic, Elegant, Neon) is not available on the free plan, it is reset to `classic`
+  - **Custom menu slug** — if the restaurant had a custom URL slug set (Pro feature), it is cleared; the menu reverts to the UUID-based public URL
 
 ---
 

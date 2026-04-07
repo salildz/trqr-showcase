@@ -37,7 +37,8 @@ Built with a strong emphasis on production security, plan-based access control, 
 |---------|-------------|
 | **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. Toggle item availability instantly. |
 | **Menu Design** | Dedicated Menu Designer page with live preview (separate from Restaurant Settings). Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
-| **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. |
+| **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. When a custom menu URL is set, the QR code encodes the slug URL; falling back to the UUID-based public URL otherwise. |
+| **Custom Menu URL** | Pro and Enterprise restaurants can define a short, memorable slug for their public menu (e.g., `trqr.net/menu/yildiz-restoran`). Real-time availability checking with debounce. Slug is revoked automatically if the restaurant's plan falls below Pro after the grace period. |
 | **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
 | **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, and close bills in one tap. |
 | **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. |
@@ -54,6 +55,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 - Clean, responsive menu display on any device
 - Category-based navigation with item photos, prices, and descriptions
 - Template-matched visual design consistent with the restaurant's brand
+- "Powered by TRQR" watermark shown on menus from Free and Starter plans; automatically removed for Pro and Enterprise restaurants
 
 ### For Platform Admins
 
@@ -213,6 +215,8 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Data Export | — | — | ✓ | ✓ |
 | Remove Branding | — | — | ✓ | ✓ |
 | Priority Support | — | — | ✓ | ✓ |
+| Custom Menu URL | — | — | ✓ | ✓ |
+| Custom Domain | — | — | — | ✓ |
 
 Plan limits are enforced **server-side** — no client-side bypassing.
 
