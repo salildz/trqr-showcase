@@ -77,7 +77,7 @@ Request
 | `userController` | Register, login, token refresh, logout, password reset, email verification (verify / resend / change pre-verification) |
 | `menuCrudController` | Menu read/write with before/after diff audit logging |
 | `menuQrController` | QR code generation, template management, print export |
-| `menuMetaController` | Restaurant name, language, established year updates |
+| `menuMetaController` | Restaurant name, language, currency, established year updates |
 | `menuImageController` | Menu item image upload and removal |
 | `statsController` | Analytics aggregations (views, revenue, top items, hourly) |
 | `tableController` | Table CRUD, order accumulation, table merge, bill close |
@@ -110,6 +110,7 @@ Menu
   ├── restaurantName
   ├── menuData (JSONB)           ← categories → items tree
   ├── menuTemplate, menuLanguage
+  ├── currency (VARCHAR 8)       ← TRY | USD | EUR | GBP; default TRY
   └── establishedYear
 
 Restaurant

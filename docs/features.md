@@ -320,6 +320,52 @@ A lightweight, fully integrated blog system for content marketing and user educa
 
 ---
 
+## Restaurant Settings
+
+Configurable per restaurant from the Restaurant Management page:
+
+| Setting | Description |
+|---------|-------------|
+| **Restaurant Name** | Display name shown on the public menu header |
+| **Table Count** | Number of active tables; clamped to plan limit |
+| **Established Year** | Optional founding year shown on supported menu templates |
+| **Currency** | Display currency for all prices (see below) |
+| **Custom Menu URL** | Short slug for the public menu (Pro and Enterprise) |
+| **Email** | Change the registered email address with confirmation flow |
+| **Password** | Change account password |
+
+---
+
+## Multi-Currency Support
+
+Restaurants can configure the currency used throughout the platform — in the dashboard, on the live public menu, on receipts, in analytics totals, and in print exports.
+
+**Supported currencies**
+
+| Code | Symbol | Name |
+|------|--------|------|
+| TRY | ₺ | Turkish Lira (default) |
+| USD | $ | US Dollar |
+| EUR | € | Euro |
+| GBP | £ | British Pound |
+
+**Where the currency symbol appears:**
+- All price columns in Table Management (order accumulation and bill view)
+- Payment steps — totals, subtotals, discount breakdown
+- Receipt PDF exports
+- Day Summary Report — revenue KPIs and top-item revenue
+- Analytics — revenue cards and charts
+- Print Menu export — item prices in all 6 templates
+- Public guest menu — item prices across all 6 templates
+
+**Implementation:**
+- Currency stored as a `VARCHAR(8)` column (`currency`) on the `Menu` model; default `TRY`
+- Updated via `PUT /api/menu/currency` (authenticated, Zod-validated)
+- Frontend: `CurrencyContext` (React context + `useCurrency()` hook) provides `currencyCode` and `currencySymbol` to all dashboard and payment components; initialised from the menu fetch on Dashboard mount
+- Public menu: `MenuCurrencyContext` (inline React context within `Menu.tsx`) resolved from the `getMenuByPublicId` response
+
+---
+
 ## Internationalization
 
 Every user-facing string in the dashboard, public menu, and error messages is localized in:

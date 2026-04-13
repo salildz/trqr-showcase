@@ -47,6 +47,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **Analytics Dashboard** | Daily views, revenue trends, top-selling items, and hourly traffic distribution — all with date range filtering (Today / This Week / This Month / Custom). |
 | **Subscription Management** | In-dashboard plan management with live plan status, trial countdown, grace period warnings, and a direct upgrade path. |
 | **Onboarding Wizard** | Step-by-step setup checklist for new restaurants: name, first item, menu preview, QR download. Dismissible once complete. |
+| **Multi-Currency** | Set the display currency (TRY ₺, USD $, EUR €, GBP £) from Restaurant Settings. Currency symbol updates everywhere: table management, payment steps, receipts, analytics, print export, and the live public menu. |
 | **Bilingual UI** | Full Turkish and English support throughout the entire dashboard, public menu, and email flows. |
 
 ### For Guests
