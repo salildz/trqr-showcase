@@ -75,6 +75,91 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 
 ---
 
+## Staff Accounts & Roles *(planned)*
+
+Restaurant-scoped sub-accounts for waiters, kitchen, cashiers, and managers — completely separate from the billing owner account.
+
+**Identity model**
+- New `StaffUser` table, isolated from the `User` (owner) table; composite `(restaurantId, username)` unique
+- 6-digit numeric PIN (bcrypt-hashed) for fast in-restaurant login — mobile devices auto-open the numeric keypad; optional full password for managers
+- Distinct JWT type (`type: 'staff'`) and a separate refresh cookie (`staffRefreshToken`) so an owner and a staff member can stay signed in on the same physical device
+- Per-device sessions with a "Devices" panel: the owner can revoke an individual device with one tap (added to Redis blacklist)
+- Lockout after 5 failed PINs for 15 minutes; per-IP rate limit on login
+
+**Table assignment mode** *(per-restaurant setting)*
+- `free` (default) — every waiter sees every table, picks up whichever is free. Matches the most common small-restaurant workflow with zero setup.
+- `assigned` — each table is assigned to one or more specific waiters; a waiter only sees their own tables. Managers and the owner still see everything. Server-side filter (not client-only), so SSE events also respect the assignment.
+- Switching modes is a single toggle in the Staff tab; in `assigned` mode a multi-select table picker appears next to each waiter row.
+- Long-press a table card in the waiter app to temporarily transfer it to a colleague (`tables.transfer` permission).
+
+**Role + permission system**
+- Four built-in roles: `manager`, `waiter`, `kitchen`, `cashier`
+- Permission flags include `tables.takeOrder`, `tables.cancelItem`, `tables.merge`, `tables.transfer`, `payments.collect`, `payments.applyDiscount`, `kitchen.view`, `kitchen.markReady`, `kitchen.reprintTicket`, `staff.manage`, `reports.viewDay`
+- Owner-side override panel (hidden behind an "Advanced" accordion so the default flow stays a single role-pick): every role has defaults, but a single user's flags can be fine-tuned (e.g., "waiter Mehmet can apply discounts, others can't", or "this waiter can take orders but not collect payments" for restaurants with a dedicated cashier)
+- Contextual constraints (e.g., "waiters can only cancel items on tables they opened, within X minutes") enforced in the controller — not in the JSON, where they'd be brittle
+
+**Staff management UI (owner-only)**
+- New "Staff" tab in the dashboard
+- Create, edit, deactivate users; system-generated initial PIN displayed once with copy
+- "Reset PIN" forces a change on next login (`mustChangePinAt`)
+- Plan-tier seat limits enforced server-side: Starter 3, Pro 10, Enterprise 50
+
+---
+
+## Waiter App *(planned)*
+
+A mobile-first, permission-gated slice of the dashboard purpose-built for phone and tablet use during service.
+
+- Available on **Starter and above**; route lives under `/staff/waiter` after PIN login
+- Bottom-nav layout (Tables · Open Orders · Profile)
+- Take orders directly from the menu, add per-item notes ("no onion", "extra spicy"), use a quantity stepper, then **Send to Kitchen** in one batch
+- Collect payments (full / equal split / per-item) when `payments.collect` is granted; discounts gated separately by `payments.applyDiscount`
+- "Ready" banner with vibration when the kitchen marks one of the waiter's orders ready (via the SSE realtime channel)
+- Device-pinning so the waiter doesn't need to re-enter the PIN every shift
+
+---
+
+## Kitchen Display System (KDS) *(planned)*
+
+Real-time order feed targeted at a tablet or in-store screen in the kitchen.
+
+- Available on **Pro and above**; route `/staff/kitchen`, optimised for landscape full-screen
+- Cards appear automatically when a waiter sends an order (SSE-driven, no polling)
+- Each card shows table number + custom name, waiter, line items with notes, and a live "preparing" timer
+- **"Ready" button** marks the whole order ready, which clears the card and pushes a banner to the waiter's phone
+- **Thermal receipt printing**:
+  - Server renders the ticket as ESC/POS bytes (`esc-pos-encoder`)
+  - **Pro**: WebUSB / WebSerial — the KDS browser sends the bytes directly to a USB or serial thermal printer (58 mm / 80 mm)
+  - **Enterprise**: optional "TRQR Print Agent" — a small Node binary running on a Raspberry Pi or mini-PC in the restaurant LAN, queues jobs and handles network/USB printing offline-safely
+  - Reprint button (gated by `kitchen.reprintTicket`) re-emits the same content with a `[REPRINT]` stamp
+  - Offline queue: pending tickets persisted in localStorage and flushed when the printer reconnects
+- **Multiple kitchen stations** *(Enterprise)*: menu items can be tagged with a station (`grill`, `cold`, `bar`, `dessert`) and routed to separate printer queues
+
+---
+
+## Realtime & Order State Machine *(planned)*
+
+The plumbing that makes the waiter app and KDS feel live.
+
+**Order item state machine**
+- Each line item carries a stable UUID (replaces today's array-index identity, which races under concurrent edits)
+- States: `pending` → `preparing` → `ready` → `served`; `cancelled` is terminal from any state
+- `pending` items are visible to the waiter but not yet to the kitchen — they batch on "Send to Kitchen"
+- Existing open tables backfilled to `served` during migration so nothing dumps onto the kitchen screen on day one
+
+**Realtime channel — Server-Sent Events**
+- `GET /api/realtime/stream?channel=kitchen|tables` — auth-gated, restaurant-scoped, heartbeat every 25 s
+- Event types: `order.created`, `order.itemAdded`, `order.itemCancelled`, `order.statusChanged`, `order.sentToKitchen`, `table.merged`, `table.closed`, `kitchen.ticketReprinted`
+- Single Node `EventEmitter` per process now; planned move to Redis Pub/Sub when we add a second backend instance
+- EventSource on the client with a 3 s polling fallback for transient network blips
+
+**Why SSE, not WebSockets**
+- Traffic is one-way (server → client); waiter / KDS actions are plain REST mutations
+- Survives Cloudflare / Nginx by default with the right `Cache-Control` and `X-Accel-Buffering: no` headers
+- Built-in reconnect; no custom heartbeat / protocol layer needed
+
+---
+
 ## Payment Tracking
 
 Available on Starter and above.

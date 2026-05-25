@@ -38,10 +38,15 @@ This document outlines the public-facing development direction for TRQR.
 
 ## In Progress / Near-term
 
+- **Staff Accounts & Roles** — Restaurant-managed sub-accounts with 6-digit PIN login, separate from the owner account. Owner creates waiter / kitchen / cashier / manager users from a dedicated "Staff" tab and can reset PINs, toggle active status, revoke individual devices, and toggle the table-assignment mode between `free` (every waiter sees every table — default, zero-setup) and `assigned` (each table pinned to specific waiters, with server-side enforcement). Default role permissions can be fine-tuned per user via an "Advanced" override panel (e.g., turn off `payments.collect` for restaurants with a dedicated cashier). Backed by a new `StaffUser` model isolated from the owner `User` table, with its own JWT type and refresh cookie so an owner and a staff member can stay logged in on the same device.
+- **Waiter App (Mobile-first)** — Trimmed dashboard targeted at phones and tablets: scan-friendly table grid, take orders by tapping menu items, add per-item notes ("no onion"), send the batch to the kitchen, and collect payment (cash / card / split / percentage discount) — all gated by staff permissions. Tables a waiter opens are visible to managers and assignable to other waiters. Push-style banner + vibration when a kitchen order is marked ready.
+- **Kitchen Display System (KDS)** — Real-time order feed for kitchen staff on a tablet or in-store screen. Cards appear automatically when a waiter sends an order, show a live "preparing" timer, and disappear when marked ready (which notifies the waiter app via SSE). Optional reprint button and reason-tagged cancel awareness.
+- **Thermal Receipt Printing** — ESC/POS ticket generation on the server, with two delivery paths: browser-driven WebUSB / WebSerial on Pro plans (works out of the box on Android tablets and desktop PCs), and a small "TRQR Print Agent" binary on Enterprise for restaurants that want stable USB/network printing on a dedicated mini-PC or Raspberry Pi. Reprint and "no printer attached" fallback both supported.
+- **Order Item State Machine** — Each line item gains a status (`pending → preparing → ready → served`, with `cancelled` terminal) and a stable UUID. Removes the existing array-index race when two waiters edit the same table at once and gives the KDS / waiter app something concrete to subscribe to.
+- **Server-Sent Events (SSE) Realtime Channel** — One-way event stream (no WebSocket) for `order.created`, `order.statusChanged`, `table.merged`, and friends. EventSource on the client with a polling fallback for network blips. Single Node EventEmitter today; Redis Pub/Sub when we go multi-instance.
 - **Inventory Tracking** — Mark items as sold out with restock controls
 - **Menu Item Variants** — Size / option groups (e.g., Small / Large, with price delta)
 - **Customer Feedback** — Simple per-item or per-visit rating flow via QR scan
-- **Staff Roles** — Waiter / manager access levels separate from the owner account
 
 ---
 
@@ -49,11 +54,10 @@ This document outlines the public-facing development direction for TRQR.
 
 - **Multi-location support** — One account managing multiple restaurant branches
 - **Online Ordering** — Allow guests to submit orders directly from the menu
-- **Kitchen Display** — Real-time order feed for kitchen staff
+- **Multiple Kitchen Stations** — Route line items to `grill` / `cold` / `bar` / `dessert` printer queues based on a per-item station tag (Enterprise)
 - **Reservation Module** — Embedded table reservation flow accessible via QR
 - **Custom Domain for Menu** — Serve public menu at restaurant's own domain
 - **WhatsApp / SMS Notifications** — Order confirmation and table-ready alerts
-- **RBAC Expansion** — Support / manager admin roles
 
 ---
 
