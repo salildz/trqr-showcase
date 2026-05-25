@@ -75,7 +75,7 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 
 ---
 
-## Staff Accounts & Roles *(planned)*
+## Staff Accounts & Roles
 
 Restaurant-scoped sub-accounts for waiters, kitchen, cashiers, and managers — completely separate from the billing owner account.
 
@@ -106,7 +106,7 @@ Restaurant-scoped sub-accounts for waiters, kitchen, cashiers, and managers — 
 
 ---
 
-## Waiter App *(planned)*
+## Waiter App
 
 A mobile-first, permission-gated slice of the dashboard purpose-built for phone and tablet use during service.
 
@@ -119,7 +119,7 @@ A mobile-first, permission-gated slice of the dashboard purpose-built for phone 
 
 ---
 
-## Kitchen Display System (KDS) *(planned)*
+## Kitchen Display System (KDS)
 
 Real-time order feed targeted at a tablet or in-store screen in the kitchen.
 
@@ -130,14 +130,14 @@ Real-time order feed targeted at a tablet or in-store screen in the kitchen.
 - **Thermal receipt printing**:
   - Server renders the ticket as ESC/POS bytes (`esc-pos-encoder`)
   - **Pro**: WebUSB / WebSerial — the KDS browser sends the bytes directly to a USB or serial thermal printer (58 mm / 80 mm)
-  - **Enterprise**: optional "TRQR Print Agent" — a small Node binary running on a Raspberry Pi or mini-PC in the restaurant LAN, queues jobs and handles network/USB printing offline-safely
+  - **Enterprise** *(planned)*: optional "TRQR Print Agent" — a small Node binary running on a Raspberry Pi or mini-PC in the restaurant LAN, queues jobs and handles network/USB printing offline-safely
   - Reprint button (gated by `kitchen.reprintTicket`) re-emits the same content with a `[REPRINT]` stamp
   - Offline queue: pending tickets persisted in localStorage and flushed when the printer reconnects
-- **Multiple kitchen stations** *(Enterprise)*: menu items can be tagged with a station (`grill`, `cold`, `bar`, `dessert`) and routed to separate printer queues
+- **Multiple kitchen stations** *(Enterprise, planned)*: menu items will be taggable with a station (`grill`, `cold`, `bar`, `dessert`) and routed to separate printer queues; the per-item station column is already in place server-side
 
 ---
 
-## Realtime & Order State Machine *(planned)*
+## Realtime & Order State Machine
 
 The plumbing that makes the waiter app and KDS feel live.
 
