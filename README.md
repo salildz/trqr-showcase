@@ -41,6 +41,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **Custom Menu URL** | Pro and Enterprise restaurants can define a short, memorable slug for their public menu (e.g., `trqr.net/menu/yildiz-restoran`). Real-time availability checking with debounce. Slug is revoked automatically if the restaurant's plan falls below Pro after the grace period. |
 | **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
 | **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, and close bills in one tap. |
+| **Staff & Kitchen System** | Owner-managed staff accounts with 6-digit PIN login (waiter / kitchen / cashier / manager roles, plus per-user permission overrides). A mobile waiter app for taking orders and collecting payment at the table, and a live Kitchen Display System (KDS) with thermal ticket printing. Available from the **Starter** plan; staff seat count scales with the tier. |
 | **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. |
 | **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
 | **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, and top items by quantity. Exportable as PDF. |
@@ -57,6 +58,15 @@ Built with a strong emphasis on production security, plan-based access control, 
 - Category-based navigation with item photos, prices, and descriptions
 - Template-matched visual design consistent with the restaurant's brand
 - "Powered by TRQR" watermark shown on menus from Free and Starter plans; automatically removed for Pro and Enterprise restaurants
+
+### For Staff (Waiters & Kitchen)
+
+- **PIN login** at `/staff/login` — staff sign in with the restaurant's menu slug (or ID) + username + 6-digit PIN, independently of the owner account, on shared phones and tablets
+- **Waiter app** (mobile-first) — table grid with live occupancy and an "awaiting payment" state, take orders with quantity steppers and per-item notes, send to kitchen, mark items served, and collect payment (full / equal split / per-item, with discounts)
+- **Kitchen Display System (KDS)** (tablet) — live order tickets grouped by table with elapsed timers, mark a whole ticket ready in one tap, and auto-print to a WebUSB thermal printer with an offline queue
+- **Open Orders** view — preparing and ready items grouped by table, with a buzz + toast the moment the kitchen marks something ready
+- **Role- and permission-based** — every action gated by the staff member's effective permissions; assigned-table mode scopes a waiter to their own tables
+- **Bilingual** — Turkish / English switch right in the staff login, waiter, and kitchen app bars
 
 ### For Platform Admins
 
@@ -108,6 +118,20 @@ Built with a strong emphasis on production security, plan-based access control, 
 | Landing Page | Pricing |
 |---|---|
 | ![Landing Page](assets/screenshots/landing-hero.png) | ![Pricing](assets/screenshots/landing-pricing.png) |
+
+### Staff & Kitchen App
+
+| Staff PIN Login | Waiter Tables |
+|---|---|
+| ![Staff Login](assets/screenshots/staff-login.png) | ![Waiter Tables](assets/screenshots/waiter-tables.png) |
+
+| Open Orders (grouped by table) | Kitchen Display (KDS) |
+|---|---|
+| ![Open Orders](assets/screenshots/waiter-orders.png) | ![Kitchen Display](assets/screenshots/kitchen-display.png) |
+
+| Collect Payment |
+|---|
+| ![Collect Payment](assets/screenshots/waiter-payment.png) |
 
 ### Authentication
 
@@ -213,6 +237,8 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Templates | Classic, Minimal | + Modern, Rustic | + Elegant, Neon | All |
 | Analytics | Basic | Standard | Advanced | Premium |
 | Payment Tracking | — | ✓ | ✓ | ✓ |
+| Staff Accounts | — | 3 | 10 | 50 |
+| Waiter App + Kitchen Display (KDS) | — | ✓ | ✓ | ✓ |
 | Data Export | — | — | ✓ | ✓ |
 | Remove Branding | — | — | ✓ | ✓ |
 | Priority Support | — | — | ✓ | ✓ |
