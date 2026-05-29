@@ -172,6 +172,21 @@ Available on Starter and above.
 
 ---
 
+## Comp & Void (İkram / İptal-İade)
+
+Available on Starter and above (reuses the `payments.applyDiscount` permission).
+
+Item-level bill adjustments for the real-world "there's a hair in this dish" / wrong-item / customer-return cases — works even on an **already-served** line, which the plain pre-kitchen cancel cannot touch.
+
+- **Two types** — *comp* (İkram: complimentary, food was made/served but not charged) and *void* (İptal-İade: removed as an error/return), tracked separately for reporting
+- **Quantity-aware** with a **mandatory reason**; available both on the owner dashboard (table cart) and the waiter table-detail screen
+- Removed lines stay **visible on the bill** (struck through, labelled İkram/İade) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
+- **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to 5% of the bill on their own, beyond which a **manager PIN** is required (verified server-side — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same 5% + manager-PIN gate now governs payment-step **discounts** too (replacing the old flat 25% cap). Two valid approvers: any active manager's login PIN, **or** an owner-set restaurant **override PIN** (Staff settings) so a restaurant with no manager-role staff still has a working approver.
+- Every adjustment is written to an **append-only `OrderAdjustment` ledger** (item, amount, type, `fromStatus`, reason, staff, timestamp) — the foundation for comp/void/waste reporting and a future Reports page. The existing pre-kitchen cancel feeds the same ledger so food-waste reporting is complete.
+- Backed by a generalised order-item state machine: terminal `comped` / `voided` statuses alongside `cancelled`, all part of the shared `NON_BILLABLE` set
+
+---
+
 ## Receipt History
 
 Available on Starter and above.
@@ -207,9 +222,14 @@ Select any calendar date and load an aggregate breakdown:
 | Cash Revenue | Revenue from cash payments |
 | Card Revenue | Revenue from card payments |
 | Total Discount | Sum of all `discountAmount` values |
+| Comps (İkram) | Value comped off bills, from the `OrderAdjustment` ledger |
+| Voids (İptal-İade) | Value voided/returned off bills |
+| Waste (Fire) | Value of items that had reached the kitchen (`fromStatus` ≠ pending) and were never sold |
 | Avg Order Value | Total revenue ÷ order count |
 
 **Top Items table** — items ranked by quantity sold for the day.
+
+**Top Adjustments table** — comped / voided / cancelled items ranked by value, with their type.
 
 **PDF export** — generates an A4-format summary report via jsPDF + html2canvas.
 
