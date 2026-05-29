@@ -181,7 +181,7 @@ Item-level bill adjustments for the real-world "there's a hair in this dish" / w
 - **Two types** — *comp* (İkram: complimentary, food was made/served but not charged) and *void* (İptal-İade: removed as an error/return), tracked separately for reporting
 - **Quantity-aware** with a **mandatory reason**; available both on the owner dashboard (table cart) and the waiter table-detail screen
 - Removed lines stay **visible on the bill** (struck through, labelled İkram/İade) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
-- **Abuse-bounded** — gated by `payments.applyDiscount`; non-managers are capped at 25% of the bill value (server-side, load-bearing), managers uncapped
+- **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to 5% of the bill on their own, beyond which a **manager PIN** is required (verified server-side against any active manager — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same 5% + manager-PIN gate now governs payment-step **discounts** too (replacing the old flat 25% cap).
 - Every adjustment is written to an **append-only `OrderAdjustment` ledger** (item, amount, type, `fromStatus`, reason, staff, timestamp) — the foundation for comp/void/waste reporting and a future Reports page. The existing pre-kitchen cancel feeds the same ledger so food-waste reporting is complete.
 - Backed by a generalised order-item state machine: terminal `comped` / `voided` statuses alongside `cancelled`, all part of the shared `NON_BILLABLE` set
 
