@@ -28,6 +28,7 @@ The menu builder is the core of the dashboard experience.
 - Encodes a public URL pointing to the restaurant's live menu — uses the custom slug URL if one is set, otherwise falls back to the UUID-based public URL
 - Downloadable as PNG from the dashboard
 - The "Go to Menu" link in the dashboard also reflects the custom slug when active
+- **Copyable public menu link** — the QR page shows the public menu URL up front in a read-only field with a one-tap copy button ("Copied" confirmation), plus copy/open shortcuts, so the owner can paste it straight into a social bio, WhatsApp, or Google Business without digging through the design panel
 
 **Menu Templates (6)**
 - **Classic** — Warm serif design, ideal for traditional restaurants
@@ -97,6 +98,10 @@ Restaurant-scoped sub-accounts for waiters, kitchen, cashiers, and managers — 
 - Permission flags include `tables.takeOrder`, `tables.cancelItem`, `tables.merge`, `tables.transfer`, `payments.collect`, `payments.applyDiscount`, `kitchen.view`, `kitchen.markReady`, `kitchen.reprintTicket`, `staff.manage`, `reports.viewDay`
 - Owner-side override panel (hidden behind an "Advanced" accordion so the default flow stays a single role-pick): every role has defaults, but a single user's flags can be fine-tuned (e.g., "waiter Mehmet can apply discounts, others can't", or "this waiter can take orders but not collect payments" for restaurants with a dedicated cashier)
 - Contextual constraints (e.g., "waiters can only cancel items on tables they opened, within X minutes") enforced in the controller — not in the JSON, where they'd be brittle
+
+**Approval settings (owner-only, Staff tab)**
+- **Manager override PIN** — a restaurant-level 6-digit PIN that authorises over-threshold discounts/comps/voids from any staff terminal, so a restaurant with no manager-role staff still has a working approver (stored bcrypt-hashed; only "set / not set" is ever exposed)
+- **Approval threshold (%)** — how much of a bill a non-manager may discount/comp/void on their own before a manager PIN is required; owner-tunable 0–100 (default 5, `0` = always require approval). Governs both the comp/void and the payment-discount gates
 
 **Staff management UI (owner-only)**
 - New "Staff" tab in the dashboard
@@ -181,8 +186,10 @@ Item-level bill adjustments for the real-world "there's a hair in this dish" / w
 - **Two types** — *comp* (İkram: complimentary, food was made/served but not charged) and *void* (İptal-İade: removed as an error/return), tracked separately for reporting
 - **Quantity-aware** with a **mandatory reason**; available both on the owner dashboard (table cart) and the waiter table-detail screen
 - Removed lines stay **visible on the bill** (struck through, labelled İkram/İade) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
-- **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to 5% of the bill on their own, beyond which a **manager PIN** is required (verified server-side — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same 5% + manager-PIN gate now governs payment-step **discounts** too (replacing the old flat 25% cap). Two valid approvers: any active manager's login PIN, **or** an owner-set restaurant **override PIN** (Staff settings) so a restaurant with no manager-role staff still has a working approver.
-- Every adjustment is written to an **append-only `OrderAdjustment` ledger** (item, amount, type, `fromStatus`, reason, staff, timestamp) — the foundation for comp/void/waste reporting and a future Reports page. The existing pre-kitchen cancel feeds the same ledger so food-waste reporting is complete.
+- **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to a **configurable threshold** of the bill on their own (default 5%, owner-tunable 0–100% from Staff settings; `0` = every comp/void needs approval), beyond which a **manager PIN** is required (verified server-side — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same configurable threshold + manager-PIN gate also governs payment-step **discounts**. Two valid approvers: any active manager's login PIN, **or** an owner-set restaurant **override PIN** (Staff settings) so a restaurant with no manager-role staff still has a working approver.
+- **Brute-force-hardened PIN** — the manager-approval PIN has its own per-`(restaurant, staff)` lockout (5 wrong PINs → 15-minute cool-off), refused *before* the bcrypt check and degrading open if Redis is down. Failed and locked-out attempts are audit-logged (`manager.approval.failed` / `.lockedOut`); a `429` carries a `Retry-After`. The UI then guides the waiter to have a manager sign in with their own account.
+- **Idempotent** — each adjustment request carries an idempotency key, so a double-tap or network retry replays the original result instead of comping the line twice.
+- Every adjustment is written to an **append-only `OrderAdjustment` ledger** (item, amount, type, `fromStatus`, reason, staff, **who approved it** — manager id or "override" — and timestamp) — the foundation for comp/void/waste reporting and a future Reports page. The existing pre-kitchen cancel feeds the same ledger so food-waste reporting is complete.
 - Backed by a generalised order-item state machine: terminal `comped` / `voided` statuses alongside `cancelled`, all part of the shared `NON_BILLABLE` set
 
 ---
