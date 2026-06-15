@@ -35,14 +35,14 @@ Built with a strong emphasis on production security, plan-based access control, 
 
 | Feature | Description |
 |---------|-------------|
-| **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. Toggle item availability instantly. |
+| **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. Toggle a single item — or a whole category — to "out of stock" ("86") instantly; unavailable items are greyed out on the public menu and blocked from new orders. |
 | **Menu Design** | Dedicated Menu Designer page with live preview (separate from Restaurant Settings). Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
 | **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. When a custom menu URL is set, the QR code encodes the slug URL; falling back to the UUID-based public URL otherwise. |
 | **Custom Menu URL** | Pro and Enterprise restaurants can define a short, memorable slug for their public menu (e.g., `trqr.net/menu/yildiz-restoran`). Real-time availability checking with debounce. Slug is revoked automatically if the restaurant's plan falls below Pro after the grace period. |
 | **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
-| **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, and close bills in one tap. |
+| **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, transfer a whole table or move individual items between tables, and close bills in one tap. Order state survives a merge/transfer (a pending item never silently becomes "served"). |
 | **Staff & Kitchen System** | Owner-managed staff accounts with 6-digit PIN login (waiter / kitchen / cashier / manager roles, plus per-user permission overrides). A mobile waiter app for taking orders and collecting payment at the table, and a live Kitchen Display System (KDS) with thermal ticket printing. Available from the **Starter** plan; staff seat count scales with the tier. |
-| **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. |
+| **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. Payments are **atomic** — the sale record and the table update commit in a single transaction, totals are recomputed server-side (the client total is never trusted), and each pay action carries an idempotency key so a dropped network response can't double-charge. Receipts are numbered uniquely per restaurant per day. |
 | **Comp & Void (İkram / İptal-İade)** | Take an individual line — even an already-served dish — off the bill as a **comp** (complimentary, e.g. a quality complaint) or a **void/return** (wrong item), quantity-aware and with a mandatory reason. Removed lines stay visible on the bill (struck through) for transparency but are never charged. Gated by the discount permission; a non-manager needs a **manager's PIN** (a manager taps in, or an owner-set restaurant override PIN) to go past the restaurant's configurable approval threshold (default 5%) — no flat ceiling, and the PIN itself is brute-force-locked. Every adjustment is idempotent and lands in an append-only ledger that records who approved it. |
 | **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
 | **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, **comps / voids / food-waste totals**, top items, and top adjustments by value. Exportable as PDF. |
@@ -67,6 +67,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 - **Comp / Void at the table** — pull an individual line (including a served dish) off the bill as a comp (İkram) or void/return (İptal-İade) with a reason, right from the table detail screen; gated by permission, and anything past the restaurant's approval threshold (default 5%) prompts for a manager PIN inline
 - **Kitchen Display System (KDS)** (tablet) — live order tickets grouped by table with elapsed timers, mark a whole ticket ready in one tap, and auto-print to a WebUSB thermal printer with an offline queue
 - **Open Orders** view — preparing and ready items grouped by table, with a buzz + toast the moment the kitchen marks something ready
+- **Day-end report** — managers and cashiers can pull a shift/day summary (orders, revenue, cash/card split) from the staff app, scoped to their restaurant and computed on the Istanbul business day
 - **Role- and permission-based** — every action gated by the staff member's effective permissions; assigned-table mode scopes a waiter to their own tables
 - **Bilingual** — Turkish / English switch right in the staff login, waiter, and kitchen app bars
 
@@ -256,14 +257,16 @@ Plan limits are enforced **server-side** — no client-side bypassing.
 TRQR is built with a production security mindset throughout.
 
 - **Progressive CAPTCHA** — Cloudflare Turnstile is triggered after repeated failed login attempts; hard block after threshold
-- **JWT + Refresh Token** — Short-lived access tokens; HTTP-only cookie refresh tokens; Redis-backed revocation on logout
+- **Rotating refresh tokens with reuse detection** — Short-lived access tokens; HTTP-only cookie refresh tokens that **rotate on every use**. A replayed (already-consumed) refresh token is treated as a stolen-cookie signal and force-logs-out the account, with a short grace window so a benign multi-tab/reload race doesn't trip it. Password change/reset invalidate every other live session.
+- **Single-use SSE stream tickets** — The realtime (Server-Sent Events) channel is authenticated with a short-lived, single-use ticket instead of the access token, so the token never lands in a URL, proxy log, or browser history.
+- **Manager-PIN approval, brute-force locked** — Over-threshold discounts/comps/voids require a manager PIN (or an owner-set override PIN); the PIN check is rate-limited and locks out after repeated failures.
 - **Zod Validation** — All incoming API data validated against strict schemas before reaching business logic
 - **XSS Sanitization** — Recursive sanitization on every request body, query, and params
 - **Helmet** — Full HTTP security header set: CSP, HSTS, X-Frame-Options, nosniff, referrer policy
 - **Rate Limiting** — Tiered limiters per endpoint category (auth, uploads, global)
 - **HPP Protection** — HTTP Parameter Pollution prevention
 - **Request Correlation** — Every request gets a UUID at ingress; propagated to audit logs
-- **Immutable Audit Log** — Every meaningful server action is logged with actor, IP, HTTP context, resource, and before/after diff
+- **Immutable Audit Log** — Every meaningful server action is logged with actor, IP, HTTP context, resource, and before/after diff; retained on a rolling window by a scheduled cleanup job
 - **Plan Enforcement** — Server-side middleware validates feature access and resource limits on every mutation
 
 ---

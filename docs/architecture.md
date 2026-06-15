@@ -74,14 +74,18 @@ Request
 
 | Controller | Responsibility |
 |------------|---------------|
-| `userController` | Register, login, token refresh, logout, password reset, email verification (verify / resend / change pre-verification) |
-| `menuCrudController` | Menu read/write with before/after diff audit logging |
+| `userController` | Register (atomic User+Menu+Restaurant), login, rotating token refresh + reuse detection, logout, password reset/change (with session flogout), email verification (verify / resend / change pre-verification) |
+| `menuCrudController` | Menu read/write with before/after diff audit logging; item/category availability ("86") |
 | `menuQrController` | QR code generation, template management, print export |
-| `menuMetaController` | Restaurant name, language, currency, established year updates |
+| `menuMetaController` | Restaurant name, language, currency, established year; sale recording (server-validated totals + idempotency) |
 | `menuImageController` | Menu item image upload and removal |
-| `statsController` | Analytics aggregations (views, revenue, top items, hourly) |
-| `tableController` | Table CRUD, order accumulation, table merge, bill close |
-| `restaurantController` | Restaurant settings, feature flags |
+| `statsController` | Analytics aggregations (views, revenue, top items, hourly) on the Istanbul business day |
+| `salesController` | Receipt list/detail + day-summary report (revenue, cash/card, comp/void/waste) |
+| `tableController` | Table CRUD, order accumulation, status-safe merge/transfer, atomic `pay`, comp/void adjustments, order state-machine transitions |
+| `staffAuthController` / `staffManagementController` | Staff PIN login (rotating refresh + grace window), owner-managed staff accounts, roles & permission overrides |
+| `kitchenController` | KDS ticket rendering → ESC/POS thermal printer bytes |
+| `realtimeController` | Server-Sent Events stream + single-use stream-ticket issuance |
+| `restaurantController` | Restaurant settings, feature flags, approval threshold, override PIN |
 | `adminController` | Platform admin: user/restaurant management, audit log queries |
 
 ---
@@ -192,15 +196,28 @@ Client                          Server
   │  ... token expires ...        │
   │                               │
   ├─ POST /api/users/refresh ───▶ │
-  │  Cookie: refreshToken         │  validate refresh token
-  │                               │  issue new access token
-  │◀── 200 { accessToken } ───────│
+  │  Cookie: refreshToken         │  verify refresh JWT
+  │                               │  reuse check: consumed JTI? → grace-window
+  │                               │    replay, else force-logout (stolen cookie)
+  │                               │  ROTATE: issue new access + new refresh
+  │                               │    cookie, blacklist the consumed JTI
+  │◀── 200 { accessToken } ───────│  Set-Cookie: refreshToken (rotated)
   │                               │
   ├─ POST /api/users/logout ────▶ │
-  │  Authorization: Bearer <jwt>  │  add JWT to Redis blacklist
+  │  Authorization: Bearer <jwt>  │  blacklist access + refresh JTI
   │                               │  clear refresh cookie
   │◀── 200 OK ───────────────────│
 ```
+
+> **Rotating, stateless sessions.** Refresh tokens are not stored in a DB
+> column — auth is the JWT signature plus Redis revocation (blacklisted JTIs +
+> a per-user `flogout` timestamp). Every `/refresh` rotates the cookie and
+> records the consumed JTI; a replay of an already-consumed token is treated as
+> a stolen-cookie signal and force-logs-out the account, with a short grace
+> window so a multi-tab / reload race isn't punished. The same model backs the
+> staff PIN sessions. `change-password` / `reset-password` bump `flogout` to
+> drop every other live session. Realtime (SSE) connections authenticate with a
+> separate single-use, short-lived ticket so the access token never enters a URL.
 
 ---
 

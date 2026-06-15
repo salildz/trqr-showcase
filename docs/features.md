@@ -8,10 +8,11 @@ The menu builder is the core of the dashboard experience.
 - Create, rename, reorder (drag-and-drop), and delete categories
 - Live validation against plan limits (max categories, max items per category)
 - Category order persisted immediately on drag
+- **Mark an entire category as out of stock ("86")** in one toggle — every item under it shows as unavailable on the public menu and is blocked from new orders, without editing each item
 
 **Menu Items**
 - Add items with: name, price, description (optional), photo (optional)
-- Toggle item availability on/off without deleting
+- **Mark a single item out of stock ("86" / şu an yok)** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
 - Drag to reorder within a category
 - Photo upload with plan-tier size limits (512 KB on Free, up to 2 MB on Pro+)
 
@@ -72,7 +73,9 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 - Mark tables as occupied / free
 - Track per-table order accumulation
 - Merge a secondary table into a primary (combined bill view)
-- Close bill with payment method: Full payment / Equal split / Per-item
+- Transfer a whole table's bill to another table, or move **individual item rows** between tables (partial transfer)
+- Merge and transfer are **status-safe**: combining rows keys on name + price + **status** + note, so a pending item is never folded into an already-served one (kitchen state and item notes are preserved)
+- Close bill with payment method: Full payment / Equal split / Per-item — *recording payments requires Starter and above (see [Payment Tracking](#payment-tracking)); on the Free plan you can take orders but not close the bill*
 
 ---
 
@@ -153,10 +156,11 @@ The plumbing that makes the waiter app and KDS feel live.
 - Existing open tables backfilled to `served` during migration so nothing dumps onto the kitchen screen on day one
 
 **Realtime channel — Server-Sent Events**
-- `GET /api/realtime/stream?channel=kitchen|tables` — auth-gated, restaurant-scoped, heartbeat every 25 s
-- Event types: `order.created`, `order.itemAdded`, `order.itemCancelled`, `order.statusChanged`, `order.sentToKitchen`, `table.merged`, `table.closed`, `kitchen.ticketReprinted`
+- `GET /api/realtime/stream?channel=kitchen|tables|all` — restaurant-scoped, heartbeat every 25 s, re-checks token revocation on every beat
+- Authenticated with a **single-use stream ticket**: the client `POST`s for a short-lived (30 s) opaque ticket over a normal Authorization-header request, then opens the stream with that ticket — the access token never rides in the EventSource URL (and so never lands in proxy/CDN logs or browser history)
+- Event types: `order.created`, `order.itemAdded`, `order.itemPaid`, `order.itemCancelled`, `order.adjusted`, `order.statusChanged`, `order.sentToKitchen`, `table.merged`, `table.unmerged`, `table.transferred`, `table.closed`, `table.renamed`, `kitchen.ticketRendered`
 - Single Node `EventEmitter` per process now; planned move to Redis Pub/Sub when we add a second backend instance
-- EventSource on the client with a 3 s polling fallback for transient network blips
+- EventSource on the client with capped exponential-backoff reconnect, a heartbeat watchdog, and refresh single-flight (a burst of reconnects shares one token refresh)
 
 **Why SSE, not WebSockets**
 - Traffic is one-way (server → client); waiter / KDS actions are plain REST mutations
@@ -173,6 +177,10 @@ Available on Starter and above.
 - Payment methods: full, split, per-item
 - **Percentage discount** — apply a 0–100% discount at the payment confirmation step; raw subtotal, discount line, and discounted total shown in the breakdown
 - Items and totals stored per transaction in `SalesRecord`, including `discountPercent`, `discountAmount`, and `splitType`
+- **Atomic** — a single `POST /tables/:id/pay` endpoint books the `SalesRecord` and updates the table in one DB transaction; an optimistic-lock conflict rolls both back, so a retry can never half-settle a bill (the old two-call flow could double-collect or drop the revenue record on a network blip)
+- **Server-validated totals** — the receipt lines and total are derived from the table's own billable rows; the client-supplied total is cross-checked and rejected if it doesn't add up, so the amount on the books can't be tampered with from the client. The manager-approval discount threshold is evaluated against the server-computed gross
+- **Idempotent** — each pay action carries an idempotency key; a dropped response replayed on retry returns the original receipt instead of charging twice
+- **Unique receipts** — receipt numbers (`YYYYMMDD-NNNN`) are issued under a per-restaurant advisory lock held to commit, backed by a unique index, so two concurrent payments can never share a number
 - Used as input for the Analytics revenue charts
 
 ---
@@ -366,16 +374,18 @@ Verified users can change their registered email address from the Restaurant Man
 ### Authentication
 
 - **JWT Access Tokens** — 15-minute expiry, verified on every protected request
-- **HTTP-only Refresh Cookies** — 7-day rotating token; `Secure`, `SameSite=Strict`
-- **Redis Token Blacklist** — Revoked tokens blacklisted by JTI; checked on every authenticated request
+- **Rotating Refresh Tokens with reuse detection** — Stateless, HTTP-only refresh cookies (`Secure`, `SameSite=Strict`) that **rotate on every use** for both owner and staff sessions. The consumed token's JTI is recorded; a request bearing an already-consumed JTI means two parties hold the same cookie — a stolen-cookie replay — and force-logs-out the account. A short **grace window** absorbs the benign case (two browser tabs / a reload firing `/refresh` near-simultaneously) so it doesn't kick a legitimate user off every device. Auth is the JWT signature + Redis revocation, not a DB token column, so an owner can also stay signed in on more than one device.
+- **Session invalidation on credential change** — `change-password` and `reset-password` flog out every live session (access + refresh) via a per-user timestamp; `change-password` hands the current device a fresh token so the user who just changed their password stays signed in there while every other device is dropped.
+- **Redis Token Blacklist** — Revoked access tokens blacklisted by JTI; consumed refresh JTIs blacklisted on rotation; checked on every authenticated request and on each SSE heartbeat
 - **Progressive CAPTCHA** — Cloudflare Turnstile triggered after repeated failed login attempts
 - **bcrypt Password Hashing** — Passwords hashed before storage; never stored in plaintext
+- **Atomic signup** — User + Menu + Restaurant are created in a single transaction, so a mid-sequence failure can't leave a half-provisioned account
 - **Rate Limiting** — Per-IP progressive limiter on auth endpoints; global 600 req/15 min across all API routes
 - **Forgot Password** — Secure token-based reset flow:
   - 256-bit random token; SHA-256 hash stored in DB — raw token never persisted
   - 1-hour TTL; one-time use (cleared immediately on consumption)
   - Per-account 60-second resend cooldown; per-IP 5/hour rate limit
-  - All active sessions (refresh tokens) invalidated on successful reset
+  - All active sessions invalidated on successful reset
   - Bilingual TR/EN reset email via SMTP
   - No user-enumeration — endpoint always responds with 200 regardless of whether the email exists
 
