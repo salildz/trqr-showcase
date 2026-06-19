@@ -40,6 +40,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. When a custom menu URL is set, the QR code encodes the slug URL; falling back to the UUID-based public URL otherwise. |
 | **Custom Menu URL** | Pro and Enterprise restaurants can define a short, memorable slug for their public menu (e.g., `trqr.net/menu/yildiz-restoran`). Real-time availability checking with debounce. Slug is revoked automatically if the restaurant's plan falls below Pro after the grace period. |
 | **Print Menu** | Export the full restaurant menu as a print-ready PDF. Choose template and paper size; preview renders live in the browser before export. |
+| **PDF Menu** *(Pro and Enterprise)* | Upload a PDF and serve it on the public menu link instead of the interactive templates — ideal for restaurants that already have a professionally designed menu. Guests see the PDF embedded inline (with an open-in-new-tab fallback for browsers that can't render PDFs inline). Switching between interactive and PDF mode is an explicit save, and the public view automatically falls back to the interactive menu if the plan drops below Pro. |
 | **Table Management** | Configure table count, assign custom names (e.g., "Garden", "VIP 1"), track per-table orders, merge tables, transfer a whole table or move individual items between tables, and close bills in one tap. Order state survives a merge/transfer (a pending item never silently becomes "served"). |
 | **Staff & Kitchen System** | Owner-managed staff accounts with 6-digit PIN login (waiter / kitchen / cashier / manager roles, plus per-user permission overrides). A mobile waiter app for taking orders and collecting payment at the table, and a live Kitchen Display System (KDS) with thermal ticket printing. Available from the **Starter** plan; staff seat count scales with the tier. |
 | **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. Payments are **atomic** — the sale record and the table update commit in a single transaction, totals are recomputed server-side (the client total is never trusted), and each pay action carries an idempotency key so a dropped network response can't double-charge. Receipts are numbered uniquely per restaurant per day. |
@@ -246,6 +247,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Remove Branding | — | — | ✓ | ✓ |
 | Priority Support | — | — | ✓ | ✓ |
 | Custom Menu URL | — | — | ✓ | ✓ |
+| PDF Menu | — | — | ✓ | ✓ |
 | Custom Domain | — | — | — | ✓ |
 
 Plan limits are enforced **server-side** — no client-side bypassing.

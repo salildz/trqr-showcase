@@ -62,6 +62,18 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 
 ---
 
+## PDF Menu *(Pro and Enterprise)*
+
+For restaurants that already have a professionally designed menu, the public menu link can serve an uploaded PDF instead of the interactive templates.
+
+- **Upload a PDF** from the Menu Design tab (PDF only, up to 10 MB); the file is validated by magic bytes server-side, not just the declared MIME type
+- **Display mode toggle** — switch the public view between **Interactive** and **PDF**; nothing goes live until an explicit **Save** (same draft/save pattern as the language and template settings), and uploading a PDF never silently changes what guests see
+- **Embedded viewer** — guests open the same menu link and see the PDF rendered inline, with an "open in new tab" fallback for browsers that can't display PDFs inline (e.g. some mobile browsers)
+- **Plan-gated and downgrade-safe** — gated to Pro+ via the `pdfMenu` plan feature; the public endpoint forces the interactive view (and hides the PDF URL) for any restaurant below Pro, so a lapsed plan can't keep serving a PDF it can no longer manage
+- Stored through the same object-store abstraction as menu images and served from the same static mount
+
+---
+
 ## Table Management
 
 - Create tables numbered sequentially
