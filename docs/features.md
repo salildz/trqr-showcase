@@ -66,9 +66,9 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 
 For restaurants that already have a professionally designed menu, the public menu link can serve an uploaded PDF instead of the interactive templates.
 
-- **Upload a PDF** from the Menu Design tab (PDF only, up to 10 MB); the file is validated by magic bytes server-side, not just the declared MIME type
+- **Upload a PDF** from the Menu Design tab (PDF only, up to 10 MB); the file is validated by magic bytes server-side, not just the declared MIME type, and rejected past a generous page ceiling so a pathological file can't hurt the guest-side renderer
 - **Display mode toggle** — switch the public view between **Interactive** and **PDF**; nothing goes live until an explicit **Save** (same draft/save pattern as the language and template settings), and uploading a PDF never silently changes what guests see
-- **Embedded viewer** — guests open the same menu link and see the PDF rendered inline, with an "open in new tab" fallback for browsers that can't display PDFs inline (e.g. some mobile browsers)
+- **Mobile-friendly viewer** — guests open the same menu link and get a canvas viewer that renders **one page at a time as they scroll** (`IntersectionObserver`, pdf.js) rather than rasterising the whole document up front, so a long menu never freezes a low-RAM phone and the first page shows immediately. Placeholders reserve each page's height (no layout jump), a failed page retries on scroll-back, a floating "page N / total" indicator tracks position, and an "open in new tab" button is always available as an escape hatch
 - **Plan-gated and downgrade-safe** — gated to Pro+ via the `pdfMenu` plan feature; the public endpoint forces the interactive view (and hides the PDF URL) for any restaurant below Pro, so a lapsed plan can't keep serving a PDF it can no longer manage
 - Stored through the same object-store abstraction as menu images and served from the same static mount
 
@@ -151,8 +151,10 @@ Real-time order feed targeted at a tablet or in-store screen in the kitchen.
   - Server renders the ticket as ESC/POS bytes (`esc-pos-encoder`)
   - **Pro**: WebUSB / WebSerial — the KDS browser sends the bytes directly to a USB or serial thermal printer (58 mm / 80 mm)
   - **Enterprise** *(planned)*: optional "TRQR Print Agent" — a small Node binary running on a Raspberry Pi or mini-PC in the restaurant LAN, queues jobs and handles network/USB printing offline-safely
-  - Reprint button (gated by `kitchen.reprintTicket`) re-emits the same content with a `[REPRINT]` stamp
+  - Reprint button (gated by `kitchen.reprintTicket`) re-emits the same content with a `[REPRINT]` stamp; ticket text is stripped of control bytes so an order note can't inject printer commands
   - Offline queue: pending tickets persisted in localStorage and flushed when the printer reconnects
+  - **Poison-ticket recovery**: a ticket that keeps failing at the USB level (bad bytes, a rejected command) is set aside after a few attempts so it can't wedge every ticket queued behind it — the KDS shows a "couldn't print" count so the kitchen can reprint that table by hand, while a device-level failure (unplugged cable) simply waits for the next retry and never quarantines a good ticket
+- **Offline awareness**: a persistent banner appears the moment connectivity drops, so kitchen and waiter staff can tell a network outage from an app fault
 - **Multiple kitchen stations** *(Enterprise, planned)*: menu items will be taggable with a station (`grill`, `cold`, `bar`, `dessert`) and routed to separate printer queues; the per-item station column is already in place server-side
 
 ---
@@ -389,10 +391,12 @@ Verified users can change their registered email address from the Restaurant Man
 - **Rotating Refresh Tokens with reuse detection** — Stateless, HTTP-only refresh cookies (`Secure`, `SameSite=Strict`) that **rotate on every use** for both owner and staff sessions. The consumed token's JTI is recorded; a request bearing an already-consumed JTI means two parties hold the same cookie — a stolen-cookie replay — and force-logs-out the account. A short **grace window** absorbs the benign case (two browser tabs / a reload firing `/refresh` near-simultaneously) so it doesn't kick a legitimate user off every device. Auth is the JWT signature + Redis revocation, not a DB token column, so an owner can also stay signed in on more than one device.
 - **Session invalidation on credential change** — `change-password` and `reset-password` flog out every live session (access + refresh) via a per-user timestamp; `change-password` hands the current device a fresh token so the user who just changed their password stays signed in there while every other device is dropped.
 - **Redis Token Blacklist** — Revoked access tokens blacklisted by JTI; consumed refresh JTIs blacklisted on rotation; checked on every authenticated request and on each SSE heartbeat
-- **Progressive CAPTCHA** — Cloudflare Turnstile triggered after repeated failed login attempts
+- **No account enumeration** — Login returns one generic `InvalidCredentials` for both an unknown identifier and a wrong password, and the not-found path burns a cost-matched bcrypt so timing doesn't reveal existence either; resend-verification answers an unknown email exactly like a real send. The true reason is still recorded in the audit log.
+- **Progressive CAPTCHA, outage-safe** — Cloudflare Turnstile triggered after repeated failed login attempts; verification fails safe on a provider outage (5 s timeout → `503` with `Retry-After`, never a hung request)
 - **bcrypt Password Hashing** — Passwords hashed before storage; never stored in plaintext
 - **Atomic signup** — User + Menu + Restaurant are created in a single transaction, so a mid-sequence failure can't leave a half-provisioned account
-- **Rate Limiting** — Per-IP progressive limiter on auth endpoints; global 600 req/15 min across all API routes
+- **Rate Limiting, actor-keyed** — Per-IP progressive limiter on auth endpoints; global limiter across all API routes keyed by **verified actor id** (owner/staff) rather than IP, so a restaurant behind one NAT isn't throttled collectively, with a separate wider bucket for guest menu views
+- **Dedicated manager approval PIN** — A manager can set an approval PIN separate from their login PIN; once set, only it green-lights over-threshold discounts/comps/voids, so a PIN entered in front of other staff never doubles as a login credential (the check is brute-force-locked either way)
 - **Forgot Password** — Secure token-based reset flow:
   - 256-bit random token; SHA-256 hash stored in DB — raw token never persisted
   - 1-hour TTL; one-time use (cleared immediately on consumption)
