@@ -289,8 +289,6 @@ Language is configurable per restaurant and switchable in the dashboard at any t
 
 🌐 **Live Product:** [https://trqr.net](https://trqr.net)
 
-> _A live demo account may be available — see the landing page for details._
-
 ---
 
 ## Source Code
