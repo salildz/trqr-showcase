@@ -47,6 +47,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **Comp & Void (İkram / İptal-İade)** | Take an individual line — even an already-served dish — off the bill as a **comp** (complimentary, e.g. a quality complaint) or a **void/return** (wrong item), quantity-aware and with a mandatory reason. Removed lines stay visible on the bill (struck through) for transparency but are never charged. Gated by the discount permission; a non-manager needs a **manager's PIN** (a manager taps in, or an owner-set restaurant override PIN) to go past the restaurant's configurable approval threshold (default 5%) — no flat ceiling, and the PIN itself is brute-force-locked. Every adjustment is idempotent and lands in an append-only ledger that records who approved it. |
 | **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
 | **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, **comps / voids / food-waste totals**, top items, and top adjustments by value. Exportable as PDF. |
+| **Day-End Report Email** *(Pro and Enterprise)* | Opt-in daily email of the day-end summary — revenue, receipts, cash/card, comps/voids, top 5 products — sent automatically after each Istanbul business day closes, at an owner-chosen hour. A self-healing hourly job derives the target day and "already sent?" from state (so a missed run is caught next tick, and double-ticks never double-send); days with no sales are skipped, so inactive accounts aren't mailed. Shares one aggregation service with the on-screen Day Summary, so the numbers match exactly. |
 | **Analytics Dashboard** | Daily views, revenue trends, top-selling items, and hourly traffic distribution — all with date range filtering (Today / This Week / This Month / Custom). |
 | **Subscription Management** | In-dashboard plan management with live plan status, trial countdown, grace period warnings, and a direct upgrade path. |
 | **Onboarding Wizard** | Step-by-step setup checklist for new restaurants: name, first item, menu preview, QR download. Dismissible once complete. |
@@ -249,6 +250,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Priority Support | — | — | ✓ | ✓ |
 | Custom Menu URL | — | — | ✓ | ✓ |
 | PDF Menu | — | — | ✓ | ✓ |
+| Day-End Report Email | — | — | ✓ | ✓ |
 | Custom Domain | — | — | — | ✓ |
 
 Plan limits are enforced **server-side** — no client-side bypassing.

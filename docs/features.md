@@ -264,6 +264,19 @@ Select any calendar date and load an aggregate breakdown:
 
 ---
 
+## Day-End Report Email *(Pro and Enterprise)*
+
+The same day-summary figures, delivered automatically. Owners opt in and pick a send hour; the report then arrives by email after each business day closes — no need to open the dashboard.
+
+- **Opt-in, per restaurant** — off by default; a toggle plus an Istanbul send-hour selector (0–23) live on the Restaurant Settings page. The chosen hour defaults to 01:00 (day close + 1h buffer so late-night sales have settled)
+- **Self-healing hourly job** — a cron tick computes the target day and the "already sent?" decision entirely from state (`istanbulDayStr(now-24h)` vs a `lastDayEndReportFor` stamp on the restaurant), so a missed run after a restart or downtime is picked up by the next tick with no backfill logic, and two ticks in the same day are idempotent (one email)
+- **Contents** — revenue, receipt count, average bill, cash/card split, discount, comp/void totals and the top 5 products, formatted in Turkish (thousands `.`, decimals `,`) with the restaurant's currency symbol
+- **Quiet on empty days** — a day with no sales is stamped and skipped (no email), which matters for the many inactive accounts; an SMTP failure is deliberately *not* stamped, so it retries on the next tick
+- **Plan-gated** — gated to Pro+ via the `dayEndReportEmail` plan feature; the settings endpoint and the job both enforce it, so a Free/Starter (or downgraded) restaurant is never mailed
+- Shares one aggregation service with the on-screen Day Summary, so the emailed numbers are byte-for-byte identical to the dashboard
+
+---
+
 ## Analytics
 
 Date range selector: Today / This Week / This Month / Custom (max 365 days).
