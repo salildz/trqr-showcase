@@ -12,6 +12,8 @@ The menu builder is the core of the dashboard experience.
 
 **Menu Items**
 - Add items with: name, price, description (optional), photo (optional)
+- **Dietary tags** — a closed set of badges (vegan, vegetarian, gluten-free, lactose-free, contains-nuts, and one of three spice levels) picked as chips in the item dialog. Spice levels are mutually exclusive, and the server normalises the list on every write (unknown values dropped, duplicates collapsed, the hottest level kept) so a hand-edited menu can never render two chilli badges
+- **English translation** — optional English name and description per item, in a collapsible section. Fallback is per field, not per item: a translated name with an untranslated description reads as English name + Turkish description, so a half-translated menu has no gaps
 - **Mark a single item out of stock ("86" / şu an yok)** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
 - Drag to reorder within a category
 - Photo upload with plan-tier size limits (512 KB on Free, up to 2 MB on Pro+)
@@ -19,6 +21,34 @@ The menu builder is the core of the dashboard experience.
 **Save Behavior**
 - Single "Save" action for the full menu
 - If a plan limit is exceeded after a plan downgrade, the save is blocked with a specific error message and a one-click revert option
+
+---
+
+## Guest Menu Experience
+
+What a customer gets after scanning the QR. Everything here is available on **every plan, Free included**, and works identically across all six templates — the behaviour lives in one shared layer rather than being reimplemented per design.
+
+**Search**
+- Appears automatically once a menu passes 12 items; below that the whole menu is a scroll away and a search field would just be chrome
+- **Turkish-aware matching**: the query and the menu text are lowercased with the Turkish locale *and* folded onto ASCII (ı/ş/ğ/ü/ö/ç), which fixes both directions of the classic trap — "cig kofte" finds "Çiğ Köfte" from a keyboard with no Turkish letters, and "ispanak" matches an item written "ISPANAK" (whose Turkish lowercase is the dotless "ıspanak")
+- Every whitespace-separated token must match, so word order is irrelevant; an item matches on its name, description, English translation or its category name, and a category-name match surfaces that whole section
+- Results render as one flat list with category headings — which is what makes search meaningful on the tab-based templates, whose normal layout only ever shows a single category
+- Out-of-stock items stay in the results, greyed as everywhere else, rather than quietly disappearing
+
+**Dietary badges**
+- Vegan, vegetarian, gluten-free, lactose-free, contains-nuts, and a spice level (mild / spicy / very spicy)
+- Drawn from `currentColor` so each template picks them up in its own palette; contains-nuts uses a caution mark, since it is the only allergen *warning* in the set
+- Normalised again at render time, so legacy or hand-edited data can never show two spice levels or an unknown tag
+
+**Item detail sheet**
+- Tapping a row opens a bottom sheet with the large photo, full description, badges, price and the out-of-stock state
+- Only rows that have a photo or a description are tappable — a bare name-and-price row doesn't open a sheet that repeats itself
+- Routeless by design (client-side state), so the SEO prerender manifest and sitemaps are untouched. Tappable rows are proper buttons: Enter/Space open them and they take a focus ring
+
+**TR/EN switch**
+- Appears in the menu header only when at least one item actually carries an English translation — otherwise "English" would be Turkish content under English chrome, which reads as broken rather than bilingual
+- The restaurant's own menu language is the default; a guest's choice is remembered **per restaurant** in local storage, so reading one menu in English doesn't switch every other menu that phone opens
+- Page metadata and structured data keep following the restaurant's published language, so the JSON-LD can't end up claiming English over Turkish item names
 
 ---
 

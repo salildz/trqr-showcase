@@ -36,6 +36,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | Feature | Description |
 |---------|-------------|
 | **Menu Builder** | Drag-and-drop category and item editor. Add names, prices, descriptions, and photos. The price field accepts both Turkish and English number formats (decimal comma or dot, thousands grouping) and echoes the parsed amount back live, so "2.500" is never silently stored as ₺2.50. Toggle a single item — or a whole category — to "out of stock" ("86") instantly; unavailable items are greyed out on the public menu and blocked from new orders. |
+| **Guest Menu Experience** | The customer-facing menu is built for someone standing at a table with a phone. **Search** appears on menus past 12 items and folds Turkish letters both ways — a guest typing "cig kofte" finds "Çiğ Köfte", and "ispanak" matches an item written "ISPANAK" — matching on name, description, English translation or category, in any word order. **Dietary badges** (vegan, vegetarian, gluten-free, lactose-free, contains-nuts, three spice levels) render on the row and in a tap-to-open **item detail sheet** with the full photo, description and price. A **TR/EN switch** appears once any item has an English translation and is remembered per restaurant on that phone. All of it works on every plan, Free included, and across all six templates. |
 | **Menu Design** | Dedicated Menu Designer page with live preview (separate from Restaurant Settings). Six professionally designed templates, each with a matching QR tabletop card design. Template access gated by plan tier. |
 | **QR Code & Tabletop Designer** | Unique QR code per restaurant with a built-in tabletop card designer. Preview all templates live, customise the card message, and export as PDF in A5, A6, or Square format. When a custom menu URL is set, the QR code encodes the slug URL; falling back to the UUID-based public URL otherwise. |
 | **Custom Menu URL** | Pro and Enterprise restaurants can define a short, memorable slug for their public menu (e.g., `trqr.net/menu/yildiz-restoran`). Real-time availability checking with debounce. Slug is revoked automatically if the restaurant's plan falls below Pro after the grace period. |
@@ -249,6 +250,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Remove Branding | — | — | ✓ | ✓ |
 | Priority Support | — | — | ✓ | ✓ |
 | Custom Menu URL | — | — | ✓ | ✓ |
+| Menu Search, Dietary Badges, TR/EN Menu | ✓ | ✓ | ✓ | ✓ |
 | PDF Menu | — | — | ✓ | ✓ |
 | Day-End Report Email | — | — | ✓ | ✓ |
 | Custom Domain | — | — | — | ✓ |
