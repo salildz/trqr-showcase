@@ -14,7 +14,7 @@ The menu builder is the core of the dashboard experience.
 - Add items with: name, price, description (optional), photo (optional)
 - **Dietary tags** — a closed set of badges (vegan, vegetarian, gluten-free, lactose-free, contains-nuts, and one of three spice levels) picked as chips in the item dialog. Spice levels are mutually exclusive, and the server normalises the list on every write (unknown values dropped, duplicates collapsed, the hottest level kept) so a hand-edited menu can never render two chilli badges
 - **English translation** — optional English name and description per item, in a collapsible section. Fallback is per field, not per item: a translated name with an untranslated description reads as English name + Turkish description, so a half-translated menu has no gaps
-- **Mark a single item out of stock ("86" / şu an yok)** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
+- **Mark a single item out of stock ("86")** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
 - Drag to reorder within a category
 - Photo upload with plan-tier size limits (512 KB on Free, up to 2 MB on Pro+)
 
@@ -229,15 +229,15 @@ Available on Starter and above.
 
 ---
 
-## Comp & Void (İkram / İptal-İade)
+## Comp & Void
 
 Available on Starter and above (reuses the `payments.applyDiscount` permission).
 
 Item-level bill adjustments for the real-world "there's a hair in this dish" / wrong-item / customer-return cases — works even on an **already-served** line, which the plain pre-kitchen cancel cannot touch.
 
-- **Two types** — *comp* (İkram: complimentary, food was made/served but not charged) and *void* (İptal-İade: removed as an error/return), tracked separately for reporting
+- **Two types** — *comp* (complimentary: food was made/served but not charged) and *void* (removed as an error or a customer return), tracked separately for reporting
 - **Quantity-aware** with a **mandatory reason**; available both on the owner dashboard (table cart) and the waiter table-detail screen
-- Removed lines stay **visible on the bill** (struck through, labelled İkram/İade) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
+- Removed lines stay **visible on the bill** (struck through, labelled as comped or returned) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
 - **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to a **configurable threshold** of the bill on their own (default 5%, owner-tunable 0–100% from Staff settings; `0` = every comp/void needs approval), beyond which a **manager PIN** is required (verified server-side — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same configurable threshold + manager-PIN gate also governs payment-step **discounts**. Two valid approvers: any active manager's login PIN, **or** an owner-set restaurant **override PIN** (Staff settings) so a restaurant with no manager-role staff still has a working approver.
 - **Brute-force-hardened PIN** — the manager-approval PIN has its own per-`(restaurant, staff)` lockout (5 wrong PINs → 15-minute cool-off), refused *before* the bcrypt check and degrading open if Redis is down. Failed and locked-out attempts are audit-logged (`manager.approval.failed` / `.lockedOut`); a `429` carries a `Retry-After`. The UI then guides the waiter to have a manager sign in with their own account.
 - **Idempotent** — each adjustment request carries an idempotency key, so a double-tap or network retry replays the original result instead of comping the line twice.
@@ -281,9 +281,9 @@ Select any calendar date and load an aggregate breakdown:
 | Cash Revenue | Revenue from cash payments |
 | Card Revenue | Revenue from card payments |
 | Total Discount | Sum of all `discountAmount` values |
-| Comps (İkram) | Value comped off bills, from the `OrderAdjustment` ledger |
-| Voids (İptal-İade) | Value voided/returned off bills |
-| Waste (Fire) | Value of items that had reached the kitchen (`fromStatus` ≠ pending) and were never sold |
+| Comps | Value comped off bills, from the `OrderAdjustment` ledger |
+| Voids | Value voided/returned off bills |
+| Waste | Value of items that had reached the kitchen (`fromStatus` ≠ pending) and were never sold |
 | Avg Order Value | Total revenue ÷ order count |
 
 **Top Items table** — items ranked by quantity sold for the day.
@@ -413,7 +413,7 @@ All accounts must verify their email address before they can log in.
 Verified users can change their registered email address from the Restaurant Management page.
 
 **Flow**
-1. User enters new email + current password in the "E-posta Değiştir" form
+1. User enters new email + current password in the change-email form
 2. Password is verified server-side; new address is checked for uniqueness
 3. A confirmation email (bilingual HTML with logo) is sent to the **new** address with a signed token (SHA-256 hash stored, 24 h TTL)
 4. Until confirmed, a dismissible "pending change" banner is shown in the dashboard with a cancel option
