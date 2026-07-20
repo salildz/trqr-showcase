@@ -92,6 +92,21 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 
 ---
 
+## AI Menu Import *(Starter and above)*
+
+Typing a full menu in by hand is the single biggest piece of friction at signup. This turns a photo of a printed menu into an editable draft.
+
+- **Upload** up to 10 photos (JPEG/PNG/WEBP) or one PDF. Photos are downscaled client-side to a 2000px long edge before upload — a courtesy that cuts upload time and vision-token cost, never a control: every bound is re-checked server-side against magic bytes, a per-file cap, a total-size cap and a PDF page ceiling
+- **Provider-agnostic by construction** — the wizard talks to a single `analyzeMenu()` interface and never learns which vendor answered. Adapters speak raw REST over the built-in `fetch`, so there is **no SDK dependency** and swapping providers is an env change (`AI_PROVIDER`, `AI_MODEL`), not a deployment of new packages
+- **The model is never trusted.** Structured output is requested, but the answer is validated against a Zod schema server-side regardless. On a schema failure the concrete validation issues are fed back for exactly **one repair retry** before a typed error is raised — which is what makes it safe to run a small, cheap model here
+- **Turkish price parsing is explicit**, because getting it wrong is expensive: `1.250,00 TL` → `1250`, never `1.25`. The dot/comma ambiguity is resolved by a locale-independent last-separator rule, and ranges ("100-150") are refused rather than guessed
+- **It skips rather than invents.** A row the model cannot read is left out and reported in a warnings list, and the review step leads with that list — telling the owner plainly which items to add by hand. Rows it read but is unsure about are highlighted separately
+- **Nothing is saved until approved** — the owner edits names and prices in place, unticks items or whole categories, and chooses append-or-replace when a menu already exists. The approved rows then enter the menu through the ordinary save path, so server-side normalisation, plan limits and the undo action all apply unchanged
+- **Spend is capped in layers** — plan gate (Starter+), a per-actor hourly rate limit, and a per-restaurant daily quota on the Istanbul business day. A quota slot is reserved *before* the call so concurrent uploads can't slip through together, and it is refunded whenever an attempt returns nothing usable
+- **Uploaded files are never stored** — they are analysis input and are dropped when the request ends
+
+---
+
 ## PDF Menu *(Pro and Enterprise)*
 
 For restaurants that already have a professionally designed menu, the public menu link can serve an uploaded PDF instead of the interactive templates.
