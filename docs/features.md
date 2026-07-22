@@ -14,7 +14,7 @@ The menu builder is the core of the dashboard experience.
 - Add items with: name, price, description (optional), photo (optional)
 - **Dietary tags** — a closed set of badges (vegan, vegetarian, gluten-free, lactose-free, contains-nuts, and one of three spice levels) picked as chips in the item dialog. Spice levels are mutually exclusive, and the server normalises the list on every write (unknown values dropped, duplicates collapsed, the hottest level kept) so a hand-edited menu can never render two chilli badges
 - **English translation** — optional English name and description per item, in a collapsible section. Fallback is per field, not per item: a translated name with an untranslated description reads as English name + Turkish description, so a half-translated menu has no gaps
-- **Mark a single item out of stock ("86" / şu an yok)** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
+- **Mark a single item out of stock ("86")** without deleting it — unavailable items are greyed out on the public menu and blocked from new orders; a stale client that still tries to order one is rejected server-side
 - Drag to reorder within a category
 - Photo upload with plan-tier size limits (512 KB on Free, up to 2 MB on Pro+)
 
@@ -89,6 +89,21 @@ Template selection is configured on a dedicated Menu Designer page, separate fro
 - Each menu template has a matching QR tabletop card design
 - Preview updates live as template is selected
 - Export to PDF in three sizes: A5, A6, Square
+
+---
+
+## AI Menu Import *(Starter and above)*
+
+Typing a full menu in by hand is the single biggest piece of friction at signup. This turns a photo of a printed menu into an editable draft.
+
+- **Upload** up to 10 photos (JPEG/PNG/WEBP) or one PDF. Photos are downscaled client-side to a 2000px long edge before upload — a courtesy that cuts upload time and vision-token cost, never a control: every bound is re-checked server-side against magic bytes, a per-file cap, a total-size cap and a PDF page ceiling
+- **Provider-agnostic by construction** — the wizard talks to a single `analyzeMenu()` interface and never learns which vendor answered. Adapters speak raw REST over the built-in `fetch`, so there is **no SDK dependency** and swapping providers is an env change (`AI_PROVIDER`, `AI_MODEL`), not a deployment of new packages
+- **The model is never trusted.** Structured output is requested, but the answer is validated against a Zod schema server-side regardless. On a schema failure the concrete validation issues are fed back for exactly **one repair retry** before a typed error is raised — which is what makes it safe to run a small, cheap model here
+- **Turkish price parsing is explicit**, because getting it wrong is expensive: `1.250,00 TL` → `1250`, never `1.25`. The dot/comma ambiguity is resolved by a locale-independent last-separator rule, and ranges ("100-150") are refused rather than guessed
+- **It skips rather than invents.** A row the model cannot read is left out and reported in a warnings list, and the review step leads with that list — telling the owner plainly which items to add by hand. Rows it read but is unsure about are highlighted separately
+- **Nothing is saved until approved** — the owner edits names and prices in place, unticks items or whole categories, and chooses append-or-replace when a menu already exists. The approved rows then enter the menu through the ordinary save path, so server-side normalisation, plan limits and the undo action all apply unchanged
+- **Spend is capped in layers** — plan gate (Starter+), a per-actor hourly rate limit, and a per-restaurant daily quota on the Istanbul business day. A quota slot is reserved *before* the call so concurrent uploads can't slip through together, and it is refunded whenever an attempt returns nothing usable
+- **Uploaded files are never stored** — they are analysis input and are dropped when the request ends
 
 ---
 
@@ -229,15 +244,28 @@ Available on Starter and above.
 
 ---
 
-## Comp & Void (İkram / İptal-İade)
+## Campaigns & Happy Hour *(Pro and Enterprise)*
+
+Scheduled, scoped discounts that apply themselves — on the menu the guest sees, on the bill the waiter takes, and in the numbers the owner reads the next morning.
+
+- **Define once, applies everywhere** — a campaign is a discount type (percentage off, fixed amount off, or a flat override price), a scope (whole menu, selected categories, or selected items), a weekly schedule (days + one or more time windows), and optional calendar bounds. Managed from a dedicated dashboard tab with inline validation that mirrors the server's schema
+- **Overnight windows are first-class** — a 22:00→02:00 window wraps past midnight and belongs to the day it *started*: a Friday-only campaign is still live at Saturday 01:00, and a Saturday-only one is not. All schedule reasoning runs on the Istanbul business clock
+- **The session lock (the happy-hour rule)** — a table that opens during a discount window keeps that campaign for its **whole sitting**: later rounds stay discounted after the window closes, even if the campaign is deleted mid-meal. The reverse also holds — a campaign that only starts mid-sitting is never applied retroactively, and a session that opened outside every window is sealed against it. A per-item mode is available for flash-style pricing that re-resolves at each order instead
+- **One campaign per line, and only ever cheaper** — when several campaigns cover an item, the most advantageous price wins; a campaign that wouldn't lower the price is simply not applied, so a "discount" can never make a line more expensive
+- **Display can't drift from billing** — the public menu shows the live campaign price beside the struck-through base price, but the base price itself is untouched and the order path re-derives every billed line server-side. What the guest sees and what the receipt charges come from the same engine
+- **Reported, not just applied** — a campaign-priced line lands on the receipt carrying its base price and campaign id, so the day summary, the printable Z-report, the waiter's day-end view and the day-end email all show the campaign giveaway as its own number, separate from manual discounts
+
+---
+
+## Comp & Void
 
 Available on Starter and above (reuses the `payments.applyDiscount` permission).
 
 Item-level bill adjustments for the real-world "there's a hair in this dish" / wrong-item / customer-return cases — works even on an **already-served** line, which the plain pre-kitchen cancel cannot touch.
 
-- **Two types** — *comp* (İkram: complimentary, food was made/served but not charged) and *void* (İptal-İade: removed as an error/return), tracked separately for reporting
+- **Two types** — *comp* (complimentary: food was made/served but not charged) and *void* (removed as an error or a customer return), tracked separately for reporting
 - **Quantity-aware** with a **mandatory reason**; available both on the owner dashboard (table cart) and the waiter table-detail screen
-- Removed lines stay **visible on the bill** (struck through, labelled İkram/İade) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
+- Removed lines stay **visible on the bill** (struck through, labelled as comped or returned) for guest + staff transparency, but are excluded from every total, payment picker and "amount owed"
 - **Manager-approval gate** — gated by `payments.applyDiscount`; a non-manager may comp/void up to a **configurable threshold** of the bill on their own (default 5%, owner-tunable 0–100% from Staff settings; `0` = every comp/void needs approval), beyond which a **manager PIN** is required (verified server-side — the POS "swipe a manager" pattern). With a valid PIN there's no upper ceiling; owners and managers act directly. The same configurable threshold + manager-PIN gate also governs payment-step **discounts**. Two valid approvers: any active manager's login PIN, **or** an owner-set restaurant **override PIN** (Staff settings) so a restaurant with no manager-role staff still has a working approver.
 - **Brute-force-hardened PIN** — the manager-approval PIN has its own per-`(restaurant, staff)` lockout (5 wrong PINs → 15-minute cool-off), refused *before* the bcrypt check and degrading open if Redis is down. Failed and locked-out attempts are audit-logged (`manager.approval.failed` / `.lockedOut`); a `429` carries a `Retry-After`. The UI then guides the waiter to have a manager sign in with their own account.
 - **Idempotent** — each adjustment request carries an idempotency key, so a double-tap or network retry replays the original result instead of comping the line twice.
@@ -281,9 +309,9 @@ Select any calendar date and load an aggregate breakdown:
 | Cash Revenue | Revenue from cash payments |
 | Card Revenue | Revenue from card payments |
 | Total Discount | Sum of all `discountAmount` values |
-| Comps (İkram) | Value comped off bills, from the `OrderAdjustment` ledger |
-| Voids (İptal-İade) | Value voided/returned off bills |
-| Waste (Fire) | Value of items that had reached the kitchen (`fromStatus` ≠ pending) and were never sold |
+| Comps | Value comped off bills, from the `OrderAdjustment` ledger |
+| Voids | Value voided/returned off bills |
+| Waste | Value of items that had reached the kitchen (`fromStatus` ≠ pending) and were never sold |
 | Avg Order Value | Total revenue ÷ order count |
 
 **Top Items table** — items ranked by quantity sold for the day.
@@ -413,7 +441,7 @@ All accounts must verify their email address before they can log in.
 Verified users can change their registered email address from the Restaurant Management page.
 
 **Flow**
-1. User enters new email + current password in the "E-posta Değiştir" form
+1. User enters new email + current password in the change-email form
 2. Password is verified server-side; new address is checked for uniqueness
 3. A confirmation email (bilingual HTML with logo) is sent to the **new** address with a signed token (SHA-256 hash stored, 24 h TTL)
 4. Until confirmed, a dismissible "pending change" banner is shown in the dashboard with a cancel option
