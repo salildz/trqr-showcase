@@ -244,6 +244,19 @@ Available on Starter and above.
 
 ---
 
+## Campaigns & Happy Hour *(Pro and Enterprise)*
+
+Scheduled, scoped discounts that apply themselves — on the menu the guest sees, on the bill the waiter takes, and in the numbers the owner reads the next morning.
+
+- **Define once, applies everywhere** — a campaign is a discount type (percentage off, fixed amount off, or a flat override price), a scope (whole menu, selected categories, or selected items), a weekly schedule (days + one or more time windows), and optional calendar bounds. Managed from a dedicated dashboard tab with inline validation that mirrors the server's schema
+- **Overnight windows are first-class** — a 22:00→02:00 window wraps past midnight and belongs to the day it *started*: a Friday-only campaign is still live at Saturday 01:00, and a Saturday-only one is not. All schedule reasoning runs on the Istanbul business clock
+- **The session lock (the happy-hour rule)** — a table that opens during a discount window keeps that campaign for its **whole sitting**: later rounds stay discounted after the window closes, even if the campaign is deleted mid-meal. The reverse also holds — a campaign that only starts mid-sitting is never applied retroactively, and a session that opened outside every window is sealed against it. A per-item mode is available for flash-style pricing that re-resolves at each order instead
+- **One campaign per line, and only ever cheaper** — when several campaigns cover an item, the most advantageous price wins; a campaign that wouldn't lower the price is simply not applied, so a "discount" can never make a line more expensive
+- **Display can't drift from billing** — the public menu shows the live campaign price beside the struck-through base price, but the base price itself is untouched and the order path re-derives every billed line server-side. What the guest sees and what the receipt charges come from the same engine
+- **Reported, not just applied** — a campaign-priced line lands on the receipt carrying its base price and campaign id, so the day summary, the printable Z-report, the waiter's day-end view and the day-end email all show the campaign giveaway as its own number, separate from manual discounts
+
+---
+
 ## Comp & Void
 
 Available on Starter and above (reuses the `payments.applyDiscount` permission).
