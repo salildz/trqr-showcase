@@ -58,6 +58,7 @@ This document outlines the public-facing development direction for TRQR.
 
 ## In Progress / Near-term
 
+- **Table-Side QR Ordering (Pro+)** — Guests scan the QR on their table and order straight from the menu; payment stays at the register. The server side is complete and live behind an off-by-default switch: each table's printed QR carries a **signed identity** (an HMAC over the table id and a reprint counter, verified with zero extra queries — reprinting the QRs is a per-table kill switch), customer lines land in a dedicated **awaiting-approval state** that can't reach the kitchen or the bill until a waiter accepts it (an auto mode sends straight to the kitchen for settled venues), and the public endpoint prices every line through the **same engine as the waiter paths** — campaign session context included, no price field in the guest schema at all. Abuse is layered: venue-NAT-sized IP limits, tight per-phone session limits, a per-table cap on open unapproved orders, strict schema bounds, and printer-control-byte stripping on notes. What remains is the guest-facing UI (cart + status screen), the waiter approval screen, and the settings/QR-print pages.
 - **Multiple Kitchen Stations (Enterprise)** — Route line items to `grill` / `cold` / `bar` / `dessert` printer queues based on a per-item station tag, with each kitchen tablet subscribed to a single station via `?station=` query. Spec is finalised; tag column already lives on every order item.
 - **Inventory Tracking** — Mark items as sold out with restock controls
 - **Menu Item Variants** — Size / option groups (e.g., Small / Large, with price delta)
@@ -68,7 +69,6 @@ This document outlines the public-facing development direction for TRQR.
 ## Planned
 
 - **Multi-location support** — One account managing multiple restaurant branches
-- **Online Ordering** — Allow guests to submit orders directly from the menu
 - **TRQR Print Agent (Enterprise)** — Small Node binary running on a Raspberry Pi / mini-PC in the restaurant LAN; takes ticket jobs over WebSocket and prints to USB / network printers. Adds resilience and offline buffering beyond what the browser-side WebUSB path delivers.
 - **Reservation Module** — Embedded table reservation flow accessible via QR
 - **Custom Domain for Menu** — Serve public menu at restaurant's own domain
