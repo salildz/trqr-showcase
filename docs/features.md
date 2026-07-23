@@ -258,6 +258,21 @@ Scheduled, scoped discounts that apply themselves — on the menu the guest sees
 
 ---
 
+## Order from the Table (QR) *(Pro and Enterprise)*
+
+Guests scan the QR on their own table and order from the menu; payment stays at the register. Off by default — the owner flips a three-state mode when ready.
+
+- **The table QR is a credential, not a link** — it encodes a signed code (HMAC over the table id and a reprint counter) verified by pure recomputation against the table row the order path loads anyway: zero extra queries per guest request, no token store. "Reprint the QRs" bumps the counter and instantly kills every previously printed code — the recovery story for a leaked or photographed code is one tap plus a reprint
+- **Approve mode (default)** — every guest order lands in a dedicated awaiting-approval state that can reach neither the kitchen nor the bill until a waiter accepts it. The waiter app and the owner dashboard both flag the table and offer per-line or whole-batch approve/reject; a rejected line simply disappears — it was never made and never owed, so it leaves no ghost kitchen card and no entry in the waste report
+- **Auto mode** — for settled venues: guest lines go straight to the kitchen under a ticket id, riding the same event the waiter's Send-to-Kitchen emits, so the KDS and thermal auto-print work unchanged
+- **One price engine** — the guest payload carries no prices at all; the server resolves every line from the menu through the same campaign-aware engine as waiter orders (happy-hour session lock included). The guest schema is strict: an unexpected field on a public endpoint is refused loudly, not silently stripped
+- **The guest page is the ordinary public menu** grown an ordering layer — every one of the six templates gets the add-to-order control for free through the shared row component. The cart is client-side until submit and survives reloads; after submitting, the guest polls order status (approved / preparing / ready / served) — no SSE for guests by design, dozens of idle streams per venue is a scale trap
+- **Abuse is layered** — venue-NAT-sized IP limits, a tight per-phone session limit, a cap on open unapproved orders per table, strict bounds (20 lines, qty ≤ 10, note ≤ 120 chars), and printer-control-byte stripping on notes at intake
+- **"Call the waiter"** — a bell on the guest page, once per table per minute, raising a sticky banner + vibration in the waiter app (a self-dismissing toast while the waiter carries plates is a missed guest)
+- **Owner controls** — a three-state mode with plan gating on enable (turning it off is always allowed, downgrade included), an A4 print sheet of every table's QR as dashed cut-out cards, and a per-table on/off switch (the bar table, the winter terrace)
+
+---
+
 ## Comp & Void
 
 Available on Starter and above (reuses the `payments.applyDiscount` permission).
