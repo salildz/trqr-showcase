@@ -52,6 +52,19 @@ What a customer gets after scanning the QR. Everything here is available on **ev
 
 ---
 
+## Menu Header Carousel *(Pro and Enterprise)*
+
+A swipeable strip of photos at the very top of the public menu — campaign posters, the room, the dish of the day.
+
+- Owners upload photos from the Menu Designer, reorder them and remove them; the order set there is the order guests see
+- Works on **all six templates**: one shared component, and each template passes its own accent, corner radius and surface so the controls look native rather than bolted on
+- Advances on its own roughly every five seconds, and **pauses** on hover, while the guest is dragging, and whenever the browser tab is hidden — an off-screen carousel never burns a phone battery
+- Honours `prefers-reduced-motion`: autoplay and slide motion switch off while the arrows and dots keep working
+- A single photo renders as a fixed banner with no controls; with none uploaded the templates render exactly as before
+- Photos are validated by their actual bytes (not the declared type), capped per plan in both count and file size, and a failed save rolls the stored file back so no orphans accumulate
+- The internal storage path is never exposed in the public menu payload, and the carousel automatically stops being served if a restaurant drops below Pro
+
+
 ## QR Code & Templates
 
 **QR Code**
@@ -67,7 +80,7 @@ What a customer gets after scanning the QR. Everything here is available on **ev
 - **Modern** — Bold gradient with vibrant accents
 - **Rustic** — Earthy, textured feel for farm-to-table or casual dining
 - **Elegant** — Dark luxury with gold typography, ideal for fine dining
-- **Neon** — Cyberpunk-inspired dark theme with glowing accents
+- **Aurora** — Deep indigo-violet gradient with frosted-glass cards, for modern venues and nightlife
 
 Template access is gated by plan tier. Upgrading immediately unlocks the template for use.
 Template selection is configured on a dedicated Menu Designer page, separate from Restaurant Settings.
@@ -520,7 +533,7 @@ Every new account starts on the **Starter plan** with a **5-day free trial**. No
   - **Categories** — sorted by display order; first 5 kept, the rest deleted
   - **Items per category** — sorted by display order; first 15 per category kept
   - **Item images** — counted globally across all categories; `imageUrl` removed from items beyond the 12-image limit (images stripped from the highest-order items first)
-  - **Menu template** — if the active template (e.g. Modern, Rustic, Elegant, Neon) is not available on the free plan, it is reset to `classic`
+  - **Menu template** — if the active template (e.g. Modern, Rustic, Elegant, Aurora) is not available on the free plan, it is reset to `classic`
   - **Custom menu slug** — if the restaurant had a custom URL slug set (Pro feature), it is cleared; the menu reverts to the UUID-based public URL
 
 ---

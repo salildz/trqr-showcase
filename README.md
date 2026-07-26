@@ -48,6 +48,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 | **Payment Tracking** | Record full payments, equal splits, or per-item payments. Apply percentage discounts at checkout; all transactions stored with full line-item detail. Payments are **atomic** — the sale record and the table update commit in a single transaction, totals are recomputed server-side (the client total is never trusted), and each pay action carries an idempotency key so a dropped network response can't double-charge. Receipts are numbered uniquely per restaurant per day. |
 | **Order from the Table (QR)** *(Pro and Enterprise)* | Guests scan their table's own QR and order from the menu; payment stays at the register. Off by default; an **approve mode** (default) holds every guest order for one-tap waiter approval — it reaches neither the kitchen nor the bill until accepted — while auto mode sends straight to the kitchen. Table QRs are **signed credentials** (HMAC over table id + a reprint counter): reprinting from the dashboard instantly kills every previously printed code. Prices are always resolved server-side through the same campaign-aware engine as waiter orders; the guest payload carries no prices at all. Includes a per-table on/off switch, an A4 print sheet of all table QRs, layered rate limits, and a once-a-minute "call the waiter" bell that alerts the waiter app. |
 | **Campaigns & Happy Hour** *(Pro and Enterprise)* | Scheduled, scoped discounts that apply themselves. Define a percentage off, a fixed amount off, or a flat price; scope it to the whole menu, selected categories or selected items; schedule it by weekday and time window (overnight windows like 22:00–02:00 wrap correctly and belong to the day they started); optionally bound it by calendar dates. The public menu shows a "-%20" discount badge and the live discounted price (kuruş-exact) next to the struck-through base price — and the menu editor shows the same live price on each item row — while the order path bills it automatically — with a **session lock**: a table that opens during happy hour keeps its discount for the whole sitting, even after the window closes. At most one campaign applies per line (the most advantageous price wins — a campaign can never make an item *more* expensive), the discounted price flows into the receipt with its campaign provenance, and day-end reporting shows exactly how much each day's campaigns gave away, separate from manual discounts. |
+| **Menu Header Carousel** *(Pro and Enterprise)* | A swipeable strip of photos at the very top of the public menu — campaign posters, the room, the dish of the day — working across all six templates, each passing its own accent so the controls look native. It advances on its own but pauses on hover, while the guest drags, and whenever the tab is hidden, and honours `prefers-reduced-motion` by dropping the motion while keeping arrows and dots usable. A single photo becomes a fixed banner; with none uploaded every template renders exactly as before. Owners upload, reorder and remove from the Menu Designer. Photos are validated by their actual bytes, capped per plan, and the internal storage path is never exposed on the public menu. |
 | **Comp & Void** | Take an individual line — even an already-served dish — off the bill as a **comp** (complimentary, e.g. a quality complaint) or a **void/return** (wrong item), quantity-aware and with a mandatory reason. Removed lines stay visible on the bill (struck through) for transparency but are never charged. Gated by the discount permission; a non-manager needs a **manager's PIN** (a manager taps in, or an owner-set restaurant override PIN) to go past the restaurant's configurable approval threshold (default 5%) — no flat ceiling, and the PIN itself is brute-force-locked. Every adjustment is idempotent and lands in an append-only ledger that records who approved it. |
 | **Receipt History** | Every completed payment stored as a numbered receipt (`YYYYMMDD-NNNN`). Filter by date/payment method, view itemised details, export individual receipts as PDF. |
 | **Day Summary Report** | Aggregate report for any calendar date: orders, revenue, cash/card split, avg order value, discounts, **comps / voids / food-waste totals**, top items, and top adjustments by value. Exportable as PDF. |
@@ -113,7 +114,7 @@ Built with a strong emphasis on production security, plan-based access control, 
 |---|---|---|
 | ![Classic](assets/screenshots/menu-classic.png) | ![Minimal](assets/screenshots/menu-minimal.png) | ![Modern](assets/screenshots/menu-modern.png) |
 
-| Rustic | Elegant | Neon |
+| Rustic | Elegant | Aurora |
 |---|---|---|
 | ![Rustic](assets/screenshots/menu-rustic.png) | ![Elegant](assets/screenshots/menu-elegant.png) | ![Neon](assets/screenshots/menu-neon.png) |
 
@@ -228,7 +229,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | **Modern** | Starter | Bold gradient, vibrant accent color |
 | **Rustic** | Starter | Earthy tones, dashed borders, handcrafted feel |
 | **Elegant** | Pro | Dark luxury design, gold accents |
-| **Neon** | Pro | Dark cyberpunk aesthetic, cyan/neon glow |
+| **Aurora** | Pro | Deep indigo-violet gradient, frosted-glass cards |
 
 ---
 
@@ -244,7 +245,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Categories | 5 | 15 | 30 | 50 |
 | Items per Category | 15 | 30 | 50 | 100 |
 | Items with Photos | 12 | 60 | 200 | 1,000 |
-| Templates | Classic, Minimal | + Modern, Rustic | + Elegant, Neon | All |
+| Templates | Classic, Minimal | + Modern, Rustic | + Elegant, Aurora | All |
 | Analytics | Basic | Standard | Advanced | Premium |
 | Payment Tracking | — | ✓ | ✓ | ✓ |
 | Staff Accounts | — | 3 | 10 | 50 |
@@ -256,6 +257,7 @@ TRQR includes six professionally designed menu templates. Each template has a ma
 | Menu Search, Dietary Badges, TR/EN Menu | ✓ | ✓ | ✓ | ✓ |
 | AI Menu Import | — | ✓ | ✓ | ✓ |
 | Campaigns & Happy Hour | — | — | ✓ | ✓ |
+| Menu Header Carousel | — | — | 8 photos | 12 photos |
 | Order-from-Table via QR | — | — | ✓ | ✓ |
 | PDF Menu | — | — | ✓ | ✓ |
 | Day-End Report Email | — | — | ✓ | ✓ |
