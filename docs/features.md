@@ -52,6 +52,18 @@ What a customer gets after scanning the QR. Everything here is available on **ev
 
 ---
 
+## Portion-Priced Items
+
+One item, several priced portions — Yarım/Tam, Küçük/Orta/Büyük, 30cm/40cm — instead of a separate menu item per size.
+
+- Portions are edited on the item itself: a name and a price each, an optional picker heading, and a per-portion sold-out switch so Büyük can run out while Yarım keeps selling
+- The item's own price mirrors the first (default) portion, and the public menu shows a "from" note so the default doesn't read as the only option
+- Guests choose a portion in a picker sheet before the line reaches their cart; waiters and the owner dashboard pick from chips in their own add-item flows
+- Campaigns discount **each portion on its own price**, and the receipt records which portion was sold — two portions that end up at the same price still bill and print as separate lines
+- Ordering a portioned item **always** requires naming a portion. The server refuses a line that doesn't, rather than falling back to the default: a wrong-size charge is silent and lands on the customer's bill, while a refusal just sends the waiter or guest back to the menu
+- Available on every plan — gating it would push cheaper plans back to duplicate items, which then consume their per-category item limit twice as fast
+
+
 ## Menu Header Carousel *(Pro and Enterprise)*
 
 A swipeable strip of photos at the very top of the public menu — campaign posters, the room, the dish of the day.
