@@ -64,6 +64,21 @@ One item, several priced portions — Yarım/Tam, Küçük/Orta/Büyük, 30cm/40
 - Available on every plan — gating it would push cheaper plans back to duplicate items, which then consume their per-category item limit twice as fast
 
 
+## Extras & Options
+
+Choices a guest adds to a line — "+extra cheese ₺15", "extra sauce ₺10", "no onions" — on top of the dish and its portion.
+
+- Options live in named groups with an at-most count, so "pick one sauce" and "pick any toppings" are both expressible
+- A price difference may be **zero** ("no onions" changes the kitchen ticket, not the bill) or **negative** ("no cheese, −₺5")
+- Any single option can sell out while the rest of its group keeps selling
+- Guests choose them in the same sheet as the portion, with the line total updating as they pick; once a group is full its other options go untappable while the picked ones stay live, so a choice can be swapped rather than refused after the fact
+- Waiters and the dashboard pick the same options from chips, with the line price following the selection
+- An extra the menu can't honour — unknown, sold out, or outside its group's limits — is **refused rather than dropped**: dropping one under-charges while the kitchen still makes it
+- The chosen extras are snapshotted with the names and differences in force at the time, so a receipt reprinted after a menu edit still reads true
+- **Campaigns:** a discount applies to the dish by default and reaches the extras only when that campaign opts in, because halving a ₺15 cheese the kitchen still buys is a margin loss nobody agreed to. The choice is frozen into a session lock alongside the campaign, so a sitting keeps its rule
+- Available on every plan
+
+
 ## Menu Header Carousel *(Pro and Enterprise)*
 
 A swipeable strip of photos at the very top of the public menu — campaign posters, the room, the dish of the day.
